@@ -1,8 +1,8 @@
 # gqlx for JavaScript Applications
 
 [![Build Status](https://travis-ci.org/graphql-extended/gqlx-js.svg?branch=master)](https://travis-ci.org/graphql-extended/gqlx-js)
-[![npm](https://img.shields.io/npm/v/gqlx.svg)](https://www.npmjs.com/package/gqlx)
-[![node](https://img.shields.io/node/v/gqlx.svg)](https://www.npmjs.com/package/gqlx)
+[![npm](https://img.shields.io/npm/v/gqlx-js.svg)](https://www.npmjs.com/package/gqlx-js)
+[![node](https://img.shields.io/node/v/gqlx-js.svg)](https://www.npmjs.com/package/gqlx-js)
 [![GitHub tag](https://img.shields.io/github/tag/graphql-extended/gqlx-js.svg)](https://github.com/graphql-extended/gqlx-js/releases)
 [![GitHub issues](https://img.shields.io/github/issues/graphql-extended/gqlx-js.svg)](https://github.com/graphql-extended/gqlx-js/issues)
 
