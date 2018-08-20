@@ -28,7 +28,7 @@ function check(exp: Expression, variables: Array<string>) {
     exp,
     {
       stack: [],
-      parameters: [...inbuiltFunctionNames, 'null', 'undefined', 'Array', 'Object'],
+      parameters: [...inbuiltFunctionNames, 'null', 'undefined', 'Array', 'Object', 'Math'],
     },
     {
       CallExpression(node: CallExpression, state: ExpressionState, cont: Continuation) {

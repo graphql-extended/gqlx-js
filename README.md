@@ -18,6 +18,8 @@ For more information on GraphQL and learning material, see [GraphQL College](htt
 
 ### Resolver Syntax
 
+The syntax follows the official specification. For more details see the [specification's GitHub repository](https://github.com/graphql-extended/gqlx-spec).
+
 Defining a resolver is as simple as writing a little bit of JavaScript (ES6 to be precise).
 
 ```plain
@@ -41,7 +43,7 @@ Besides the restrictions the syntax also offers new special (inbuilt) functions.
 
 ### Inbuilt Functions
 
-The following functions are available *internally* and will be expanded during evaluation.
+The following functions are available *internally* and will be expanded during evaluation. For more details see the [specification](https://github.com/graphql-extended/gqlx-spec).
 
 #### either
 
