@@ -1,5 +1,9 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.1.3
+
+- Support for UMD bundling
+
 ## 0.1.2
 
 - Allow using `Math`
