@@ -77,7 +77,7 @@ function transformAwait(expr: Expression, apis: Array<string>) {
     CallExpression(node: CallExpression, ancestors: Array<ExpressionNode>) {
       const { callee } = node;
 
-      if (ancestors.length > 1 && callee.type === 'Identifier' && apis.includes(callee.name)) {
+      if (ancestors.length > 1 && callee.type === 'Identifier' && apis.indexOf(callee.name) >= 0) {
         let tempVar = '';
 
         for (let i = ancestors.length; i--; ) {
@@ -142,10 +142,7 @@ function transformAwait(expr: Expression, apis: Array<string>) {
               //   break;
               case 'ReturnStatement':
                 if (ancestor.argument && ancestor.argument.type !== 'AwaitExpression') {
-                  ancestor.argument = {
-                    type: 'AwaitExpression',
-                    argument: ancestor.argument,
-                  };
+                  ancestor.argument = wrapInAwait(ancestor.argument);
                 }
                 break;
               // case 'MemberExpression':
@@ -190,7 +187,8 @@ export function transform(gql: DynamicGqlSchema, api: AvailableApi, options: Gql
       const connector = connectors[key] || (connectors[key] = {});
       const args = getArguments(gql.schema.ast, key, type);
       const block = transpileSource(resolver, api, args);
-      connector[type] = wrapper(block);
+      const source = wrapper(block);
+      connector[type] = source;
     }
   }
 

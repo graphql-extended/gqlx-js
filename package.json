@@ -19,6 +19,7 @@
   "author": "graphql-extended <gqlx@anglevisions.com>",
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@types/acorn": "^4.0.3",
     "@types/graphql": "^0.13.1",

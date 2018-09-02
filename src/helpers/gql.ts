@@ -37,7 +37,7 @@ export function getMode(tokens: Array<Token>, modes: Array<string>, current: str
         initial.kind === 'Name' &&
         initial.value === 'type' &&
         previous.kind === 'Name' &&
-        modes.includes(previous.value || '')
+        modes.indexOf(previous.value || '') >= 0
       ) {
         return previous.value;
       }

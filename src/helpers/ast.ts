@@ -116,10 +116,7 @@ export function insertAwaitedValue(statements: Array<Statement>, name: string, a
   insertNewValue(
     statements,
     name,
-    {
-      type: 'AwaitExpression',
-      argument,
-    },
+    wrapInAwait(argument),
     offset,
   );
 }

@@ -44,7 +44,7 @@ function check(exp: Expression, variables: Array<string>) {
         if (!last || last.type === 'CallExpression') {
           const all = [...variables, ...state.parameters];
 
-          if (!all.includes(node.name)) {
+          if (all.indexOf(node.name) === -1) {
             throw new Error(
               `The variable "${node.name}" is not available in the current context. Available: ${all.join(', ')}.`,
             );

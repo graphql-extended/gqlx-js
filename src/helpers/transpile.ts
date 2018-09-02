@@ -70,7 +70,7 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
 
           const key = transpileNode(p.key, apis, []);
 
-          if (!p.shorthand || args.includes(key)) {
+          if (!p.shorthand || args.indexOf(key) >= 0) {
             const value = transpileNode(p.value as any, apis, args);
             return `${key}: ${value}`;
           }
@@ -148,9 +148,9 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       return `(${async}(${params}) => ${body})`;
     }
     case 'Identifier': {
-      if (args.includes(node.name)) {
+      if (args.indexOf(node.name) >= 0) {
         return `$data.${node.name}`;
-      } else if (apis.includes(node.name)) {
+      } else if (apis.indexOf(node.name) >= 0) {
         return `$api.${node.name}`;
       }
 

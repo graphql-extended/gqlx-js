@@ -29,7 +29,7 @@ export function generate(name: string, connectors: Connectors) {
     const connector = connectors[type];
     res[type] = Object.keys(connector).reduce((con, field) => {
       const source = connector[field];
-      const Func = source.includes('await ') ? AsyncFunction : Function;
+      const Func = source.indexOf('await ') >= 0 ? AsyncFunction : Function;
       con[field] = new Func('$api', '$data', source);
       return con;
     }, {});
