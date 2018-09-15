@@ -1,12 +1,5 @@
 import { DynamicGqlSchema, AvailableApi, Connectors, GqlTransformOptions } from '../types';
-import {
-  Expression,
-  Pattern,
-  BlockStatement,
-  CallExpression,
-  ArrowFunctionExpression,
-  ConditionalExpression,
-} from 'estree';
+import { Expression, BlockStatement, CallExpression, ArrowFunctionExpression, ConditionalExpression } from 'estree';
 import {
   getArguments,
   ExpressionNode,
@@ -19,8 +12,10 @@ import {
   transpileNode,
   createGenerationMask,
 } from '../helpers';
+import { regenerate } from './regenerate';
 
 const walk = require('acorn/dist/walk');
+const legacy = (global as any).regeneratorRuntime;
 
 function transformAwait(expr: Expression, apis: Array<string>) {
   const generate = createGenerationMask();
@@ -173,10 +168,19 @@ function defaultWrapper(block: string) {
   return `try ${block} catch (err) { throw new Error(JSON.stringify(err)); }`;
 }
 
+function defaultRegenerate(source: string) {
+  if (legacy) {
+    return regenerate(source);
+  }
+
+  return source;
+}
+
 export function transform(gql: DynamicGqlSchema, api: AvailableApi, options: GqlTransformOptions = {}): Connectors {
   const keys = Object.keys(gql.resolvers);
   const connectors: Connectors = {};
   const wrapper = options.wrapStatements || defaultWrapper;
+  const regenerate = typeof options.regenerate === 'function' ? options.regenerate : defaultRegenerate;
 
   for (const key of keys) {
     const resolvers = gql.resolvers[key];
@@ -188,7 +192,8 @@ export function transform(gql: DynamicGqlSchema, api: AvailableApi, options: Gql
       const args = getArguments(gql.schema.ast, key, type);
       const block = transpileSource(resolver, api, args);
       const source = wrapper(block);
-      connector[type] = source;
+      const target = regenerate(source);
+      connector[type] = target;
     }
   }
 

@@ -1,4 +1,5 @@
 require('core-js/modules/es6.symbol');
+require('core-js/modules/es6.promise');
 require('core-js/modules/es6.object.define-property');
 require('core-js/modules/es6.object.define-properties');
 require('core-js/modules/es6.object.get-own-property-descriptor');

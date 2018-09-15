@@ -31,6 +31,12 @@ export function transpilePattern(pattern: Pattern, apis: Array<string>, args: Ar
 
 export function transpileNode(node: ExpressionNode, apis: Array<string>, args: Array<string>): string {
   switch (node.type) {
+    case 'EmptyStatement': {
+      return ';';
+    }
+    case 'TryStatement': {
+      return '';
+    }
     case 'ExpressionStatement': {
       const expr = transpileNode(node.expression, apis, args);
       return `${expr};`;

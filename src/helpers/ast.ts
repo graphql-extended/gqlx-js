@@ -10,6 +10,8 @@ import {
   VariableDeclaration,
   Property,
   BinaryExpression,
+  EmptyStatement,
+  TryStatement,
 } from 'estree';
 
 export type ExpressionNode =
@@ -17,6 +19,8 @@ export type ExpressionNode =
   | Super
   | BlockStatement
   | ReturnStatement
+  | EmptyStatement
+  | TryStatement
   | ExpressionStatement
   | VariableDeclaration
   | Property;
@@ -113,10 +117,5 @@ export function insertNewValue(statements: Array<Statement>, name: string, init:
 }
 
 export function insertAwaitedValue(statements: Array<Statement>, name: string, argument: Expression, offset = 1) {
-  insertNewValue(
-    statements,
-    name,
-    wrapInAwait(argument),
-    offset,
-  );
+  insertNewValue(statements, name, wrapInAwait(argument), offset);
 }
