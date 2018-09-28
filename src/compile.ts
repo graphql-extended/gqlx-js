@@ -9,7 +9,7 @@ export function compile(
   options?: GqlTransformOptions,
 ): DynamicGqlModule {
   const gql = parseDynamicSchema(source);
-  validate(gql, api);
+  validate(gql, api, options);
   const connectors = transform(gql, api, options);
   const result = generate(name, connectors);
   return {

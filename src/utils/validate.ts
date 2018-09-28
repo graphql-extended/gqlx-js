@@ -8,7 +8,7 @@ import {
   VariableDeclaration,
   UnaryExpression,
 } from 'estree';
-import { DynamicGqlSchema, AvailableApi } from '../types';
+import { DynamicGqlSchema, AvailableApi, GqlTransformOptions } from '../types';
 import { getArguments, getNames, inbuiltFunctionNames } from '../helpers';
 import { assertValidSchema, buildSchema } from 'graphql';
 
@@ -21,14 +21,16 @@ interface Continuation {
   (node: BaseNode, state: ExpressionState): void;
 }
 
+const debugNames = ['console', 'assert'];
+const standardNames = ['null', 'undefined', 'Array', 'Object', 'Math'];
 const walk = require('acorn/dist/walk');
 
-function check(exp: Expression, variables: Array<string>) {
+function check(exp: Expression, variables: Array<string>, debug = false) {
   walk.recursive(
     exp,
     {
       stack: [],
-      parameters: [...inbuiltFunctionNames, 'null', 'undefined', 'Array', 'Object', 'Math'],
+      parameters: [...inbuiltFunctionNames, ...standardNames, ...(debug ? debugNames : [])],
     },
     {
       CallExpression(node: CallExpression, state: ExpressionState, cont: Continuation) {
@@ -83,11 +85,16 @@ function check(exp: Expression, variables: Array<string>) {
           throw new Error('Using `delete` is not allowed. Use the spread operator instead.');
         }
       },
+      DebuggerStatement() {
+        if (!debug) {
+          throw new Error('The debugger statement can only be used with enabled debug option.');
+        }
+      },
     },
   );
 }
 
-export function validate(gql: DynamicGqlSchema, api: AvailableApi) {
+export function validate(gql: DynamicGqlSchema, api: AvailableApi, options?: GqlTransformOptions) {
   const keys = Object.keys(gql.resolvers);
   const fns = Object.keys(api);
   const schema = buildSchema(gql.schema.text);
@@ -100,7 +107,7 @@ export function validate(gql: DynamicGqlSchema, api: AvailableApi) {
       const resolver = resolvers[type];
       const args = getArguments(gql.schema.ast, key, type);
       const variables = [...fns, ...args];
-      check(resolver, variables);
+      check(resolver, variables, options && options.debug);
     }
   }
 

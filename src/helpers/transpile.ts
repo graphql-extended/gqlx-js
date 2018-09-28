@@ -152,6 +152,11 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       const body = transpileNode(node.body as any, apis, args);
       return `while (${condition}) ${body}`;
     }
+    case 'DoWhileStatement': {
+      const condition = transpileNode(node.test, apis, args);
+      const body = transpileNode(node.body as any, apis, args);
+      return `do ${body} while (${condition});`;
+    }
     case 'ForStatement': {
       const init = node.init ? transpileNode(node.init, apis, args).replace(/;$/, '') : '';
       const test = node.test ? transpileNode(node.test, apis, args) : '';
@@ -173,6 +178,9 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       }
 
       return node.name;
+    }
+    case 'DebuggerStatement': {
+      return 'debugger;';
     }
     default:
       return '';

@@ -13,6 +13,8 @@ import {
   WhileStatement,
   ForStatement,
   IfStatement,
+  DebuggerStatement,
+  DoWhileStatement,
 } from 'estree';
 
 export type ExpressionNode =
@@ -21,7 +23,9 @@ export type ExpressionNode =
   | BlockStatement
   | IfStatement
   | WhileStatement
+  | DoWhileStatement
   | ForStatement
+  | DebuggerStatement
   | ReturnStatement
   | ExpressionStatement
   | VariableDeclaration

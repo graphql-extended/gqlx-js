@@ -4,6 +4,7 @@
 
 - Support for if / for / while in block statements
 - Fixed unnecessary use of `await`
+- Support for debugger mode
 
 ## 0.1.3
 

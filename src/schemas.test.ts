@@ -137,4 +137,27 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('works for a logic Query with do while', () => {
+    const source = `type Query {
+      foo(id: ID): String {
+        use(get('api/count'), (num) => {
+          const ids = [];
+
+          do {
+            ids.push(--num);
+          } while (num > 0);
+
+          return ids.join(',');
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foo:
+          "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/count'), ((num) => { const ids = []; do { ids.push((--num)); } while ((num > 0)); return ids.join(','); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
 });
