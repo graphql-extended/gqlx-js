@@ -10,12 +10,18 @@ import {
   VariableDeclaration,
   Property,
   BinaryExpression,
+  WhileStatement,
+  ForStatement,
+  IfStatement,
 } from 'estree';
 
 export type ExpressionNode =
   | Expression
   | Super
   | BlockStatement
+  | IfStatement
+  | WhileStatement
+  | ForStatement
   | ReturnStatement
   | ExpressionStatement
   | VariableDeclaration
@@ -26,6 +32,10 @@ export function mayBeAsync(node: ExpressionNode) {
 }
 
 export function wrapInAwait(argument: any): AwaitExpression {
+  if (argument.type === 'AwaitExpression') {
+    return argument;
+  }
+
   return {
     type: 'AwaitExpression',
     argument,

@@ -104,6 +104,8 @@ function transformAwait(expr: Expression, apis: Array<string>) {
             const arg = ancestors[i + 1];
             const argIndex = ancestor.arguments.findIndex(m => m === arg);
             ancestor.arguments[argIndex] = wrapInAwait(arg);
+          } else if (ancestor.type === 'AssignmentExpression') {
+            ancestor.right = wrapInAwait(ancestor.right);
           }
         }
       }

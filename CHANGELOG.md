@@ -1,5 +1,10 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.1.4
+
+- Support for if / for / while in block statements
+- Fixed unnecessary use of `await`
+
 ## 0.1.3
 
 - Also support graphql@0.14.x as peer dependency
