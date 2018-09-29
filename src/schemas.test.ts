@@ -17,6 +17,16 @@ describe('getConnectors', () => {
     });
   });
 
+  it('places await correctly in binary expression', () => {
+    const source = `type Query { foos: [String] { get('api/foo') * 2 } }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foos: "try { return (await $api.get('api/foo') * 2); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
+
   it('works for two simple Queries', () => {
     const source = `type Query { foos: [String] { get('api/foo') } bar(id: ID!): String { get('api/bar/' + id) } }`;
     const result = getConnectors(source);

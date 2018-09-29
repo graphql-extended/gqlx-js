@@ -87,7 +87,10 @@ function transformAwait(expr: Expression, apis: Array<string>) {
             insertAwaitedValue(ancestor.body, tempVar, node);
           } else if (!tempVar && ancestor.type === 'ReturnStatement') {
             const arg = ancestors[i + 1];
-            ancestor.argument = wrapInAwait(arg);
+
+            if (arg.type !== 'BinaryExpression' && arg.type !== 'AssignmentExpression') {
+              ancestor.argument = wrapInAwait(arg);
+            }
           } else if (!tempVar && ancestor.type === 'Property') {
             const arg = ancestors[i + 1];
             ancestor.value = wrapInAwait(arg);
@@ -106,6 +109,12 @@ function transformAwait(expr: Expression, apis: Array<string>) {
             ancestor.arguments[argIndex] = wrapInAwait(arg);
           } else if (ancestor.type === 'AssignmentExpression') {
             ancestor.right = wrapInAwait(ancestor.right);
+          } else if (ancestor.type === 'BinaryExpression') {
+            if (ancestor.left === node) {
+              ancestor.left = wrapInAwait(node);
+            } else if (ancestor.right === node) {
+              ancestor.right = wrapInAwait(node);
+            }
           }
         }
       }
