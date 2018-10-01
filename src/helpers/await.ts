@@ -1,64 +1,94 @@
-import { CallExpression } from 'estree';
+import { CallExpression, Expression } from 'estree';
 import { ExpressionNode, wrapInPromiseAll, wrapInAwait, insertAwaitedValue } from './ast';
 
-export function awaitCall(node: CallExpression, ancestors: Array<ExpressionNode>, variables: Array<string>) {
-  const tempVariables: Array<string> = [];
-
-  for (let i = ancestors.length; i--; ) {
+function placeVariableClosestBlock(
+  node: Expression,
+  ancestors: Array<ExpressionNode>,
+  variable: string,
+  start: number,
+) {
+  for (let i = start; i--; ) {
     const ancestor = ancestors[i];
-    const hasVariable = tempVariables.length > 0;
+    const child = ancestors[i + 1];
 
-    if (hasVariable && ancestor.type === 'BlockStatement') {
-      for (const variable of tempVariables) {
-        insertAwaitedValue(ancestor.body, variable, node);
-      }
-
-      tempVariables.splice(0, tempVariables.length);
-    } else if (!hasVariable && ancestor.type === 'ReturnStatement') {
-      const arg = ancestors[i + 1];
-
-      if (arg.type !== 'BinaryExpression' && arg.type !== 'AssignmentExpression') {
-        ancestor.argument = wrapInAwait(arg);
-      }
-    } else if (!hasVariable && ancestor.type === 'Property') {
-      const arg = ancestors[i + 1];
-      ancestor.value = wrapInAwait(arg);
-    } else if (ancestor.type === 'ArrowFunctionExpression') {
-      ancestor.async = true;
-    } else if (!hasVariable && ancestor.type === 'MemberExpression') {
-      const variable = `_${variables.length}`;
-      variables.push(variable);
-      tempVariables.push(variable);
-      ancestor.object = {
-        type: 'Identifier',
-        name: variable,
-      };
-    } else if (ancestor.type === 'CallExpression' && ancestor !== node) {
-      const arg = ancestors[i + 1];
-
-      if (arg.type !== 'ArrowFunctionExpression') {
-        const argIndex = ancestor.arguments.findIndex(m => m === arg);
-        ancestor.arguments[argIndex] = wrapInAwait(arg);
-      }
-    } else if (ancestor.type === 'AssignmentExpression' && ancestor.right === node) {
-      ancestor.right = wrapInAwait(ancestor.right);
-    } else if (ancestor.type === 'BinaryExpression') {
-      if (ancestor.left === node) {
-        ancestor.left = wrapInAwait(node);
-      } else if (ancestor.right === node) {
-        ancestor.right = wrapInAwait(node);
-      }
-    } else if (ancestor.type === 'ConditionalExpression') {
-      if (ancestor.consequent === node) {
-        ancestor.consequent = wrapInAwait(node);
-      } else if (ancestor.alternate === node) {
-        ancestor.alternate = wrapInAwait(node);
-      }
+    if (ancestor.type === 'BlockStatement') {
+      const position = ancestor.body.indexOf(child as any);
+      const offset = ancestor.body.length - position;
+      insertAwaitedValue(ancestor.body, variable, node, offset);
+      break;
     }
   }
 }
 
-export function awaitMap(node: CallExpression, ancestors: Array<ExpressionNode>) {
+function placeAsyncLambda(ancestors: Array<ExpressionNode>, variables: Array<string>, start = ancestors.length) {
+  for (let i = start; i--; ) {
+    const ancestor = ancestors[i];
+
+    if (ancestor.type === 'ArrowFunctionExpression') {
+      ancestor.async = true;
+      awaitCall(ancestor, ancestors, variables, i);
+      break;
+    }
+  }
+}
+
+export function awaitCall(
+  node: Expression,
+  ancestors: Array<ExpressionNode>,
+  variables: Array<string>,
+  start = ancestors.length,
+) {
+  for (let i = start; i--; ) {
+    const ancestor = ancestors[i];
+    const child = ancestors[i + 1];
+
+    if (node !== ancestor) {
+      if (ancestor.type === 'ReturnStatement') {
+        ancestor.argument = wrapInAwait(child);
+      } else if (ancestor.type === 'Property') {
+        ancestor.value = wrapInAwait(child);
+      } else if (ancestor.type === 'MemberExpression') {
+        const variable = `_${variables.length}`;
+        variables.push(variable);
+        placeVariableClosestBlock(node, ancestors, variable, i);
+        ancestor.object = {
+          type: 'Identifier',
+          name: variable,
+        };
+      } else if (ancestor.type === 'CallExpression' && child.type !== 'ArrowFunctionExpression') {
+        const argIndex = ancestor.arguments.findIndex(m => m === child);
+        ancestor.arguments[argIndex] = wrapInAwait(child);
+      } else if (ancestor.type === 'AssignmentExpression') {
+        ancestor.right = wrapInAwait(ancestor.right);
+      } else if (ancestor.type === 'BinaryExpression') {
+        if (ancestor.left === child) {
+          ancestor.left = wrapInAwait(child);
+        } else {
+          ancestor.right = wrapInAwait(child);
+        }
+      } else if (ancestor.type === 'LogicalExpression') {
+        if (ancestor.left === child) {
+          ancestor.left = wrapInAwait(child);
+        } else {
+          ancestor.right = wrapInAwait(child);
+        }
+      } else if (ancestor.type === 'ConditionalExpression') {
+        if (ancestor.consequent === child) {
+          ancestor.consequent = wrapInAwait(child);
+        } else {
+          ancestor.alternate = wrapInAwait(child);
+        }
+      } else {
+        continue;
+      }
+
+      placeAsyncLambda(ancestors, variables, i);
+      break;
+    }
+  }
+}
+
+export function awaitMap(node: CallExpression, ancestors: Array<ExpressionNode>, variables: Array<string>) {
   const lambda = node.arguments && node.arguments[0];
 
   if (lambda && lambda.type === 'ArrowFunctionExpression' && lambda.async === true) {
@@ -73,22 +103,6 @@ export function awaitMap(node: CallExpression, ancestors: Array<ExpressionNode>)
         break;
     }
 
-    for (const ancestor of ancestors) {
-      switch (ancestor.type) {
-        case 'ArrowFunctionExpression':
-          if (!ancestor.async) {
-            ancestor.async = true;
-          }
-          break;
-        case 'ReturnStatement':
-          if (ancestor.argument && ancestor.argument.type !== 'AwaitExpression') {
-            ancestor.argument = {
-              type: 'AwaitExpression',
-              argument: ancestor.argument,
-            };
-          }
-          break;
-      }
-    }
+    awaitCall(node, ancestors, variables);
   }
 }

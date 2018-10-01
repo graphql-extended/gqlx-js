@@ -15,6 +15,7 @@ const walk = require('acorn/dist/walk');
 
 function transformAwait(expr: Expression, apis: Array<string>) {
   const generate = createGenerationMask();
+  const variables: Array<string> = [];
   const block: BlockStatement = {
     body: [
       {
@@ -24,11 +25,10 @@ function transformAwait(expr: Expression, apis: Array<string>) {
     ],
     type: 'BlockStatement',
   };
-  const variables: Array<string> = [];
 
   walk.ancestor(block, {
     ArrowFunctionExpression(node: ArrowFunctionExpression) {
-      const body = node.body;
+      const { body } = node;
 
       if (mayBeAsync(body)) {
         node.body = {
@@ -53,14 +53,12 @@ function transformAwait(expr: Expression, apis: Array<string>) {
         } else if (typeof generate[name] === 'boolean') {
           generate[name] = true;
         }
-      }
-
-      if (
+      } else if (
         callee.type === 'MemberExpression' &&
         callee.property.type === 'Identifier' &&
         callee.property.name === 'map'
       ) {
-        awaitMap(node, ancestors);
+        awaitMap(node, ancestors, variables);
       }
     },
   });

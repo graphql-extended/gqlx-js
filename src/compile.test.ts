@@ -74,9 +74,9 @@ describe('compile', () => {
     const svc = mod.createService({
       get(path: string) {
         switch (path) {
-          case '/api/item':
+          case 'api/item':
             return Promise.resolve({ items: [] });
-          case '/api/foo':
+          case 'api/foo':
             return Promise.resolve({ items: [{ type: 'foo', id: 0 }, { type: 'bar', id: 2 }] });
           default:
             return Promise.reject('Should not end up here.');
@@ -84,9 +84,9 @@ describe('compile', () => {
       },
       post(path: string, obj: any) {
         switch (path) {
-          case '/api/item':
+          case 'api/item':
             return Promise.resolve({ id: 10 });
-          case '/api/foo':
+          case 'api/foo':
             return Promise.resolve('');
           default:
             const id = parseInt(path.split('/')[2], 10);
@@ -94,9 +94,11 @@ describe('compile', () => {
         }
       },
     });
+
     const resultWithArgument = await svc('Query', 'test', { id: 5 });
+    expect(resultWithArgument).toBe(15);
+
     const resultWithoutArgument = await svc('Query', 'test', {});
-    expect(resultWithArgument).toBe(7);
-    expect(resultWithoutArgument).toBe(15);
+    expect(resultWithoutArgument).toBe(12);
   });
 });

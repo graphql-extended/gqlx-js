@@ -54,7 +54,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(await _0.items, (async ([item]) => { (item = ((item) ? (item) : (await $api.post('api/bar', ({  }))))); return await $api.post(`api/foo/${$data.id}`, ({ target: item.id })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(_0.items, (async ([item]) => { (item = ((item) ? (item) : (await $api.post('api/bar', ({  }))))); return await $api.post(`api/foo/${$data.id}`, ({ target: item.id })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -75,7 +75,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(await _0.items, (async ([item]) => { if ((!item)) { (item = await $api.post('api/bar')); } return item; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(_0.items, (async ([item]) => { if ((!item)) { (item = await $api.post('api/bar')); } return item; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -96,7 +96,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(await _0.items, (async ([item]) => { if ((!item)) { return await $api.post('api/bar'); } else { return item; } })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(_0.items, (async ([item]) => { if ((!item)) { return await $api.post('api/bar'); } else { return item; } })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -143,7 +143,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/count'), ((num) => { const ids = []; for (let i = 0; (i < num); (i++)) { ids.push(i); } return ids.join(','); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); return use(await $api.get('api/count'), ((num) => { const ids = []; for (let i = 0; (i < num); (i++)) { ids.push(i); } return ids.join(','); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -166,7 +166,22 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/count'), ((num) => { const ids = []; do { ids.push((--num)); } while ((num > 0)); return ids.join(','); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); return use(await $api.get('api/count'), ((num) => { const ids = []; do { ids.push((--num)); } while ((num > 0)); return ids.join(','); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
+
+  it('works for a logic Query with parallel requests', () => {
+    const source = `type Query {
+      foo(id: ID): String {
+        get('api/items').map(item => get(\`api/item/\${item.id}\`))
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foo:
+          "try { const _0 = await $api.get('api/items'); return await _0.map((async (item) => { return await $api.get(`api/item/${item.id}`); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });

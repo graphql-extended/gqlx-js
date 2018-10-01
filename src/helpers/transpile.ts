@@ -111,7 +111,10 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       return `(${left} ${node.operator} ${right})`;
     }
     case 'AssignmentExpression': {
-      const variable = transpilePattern(node.left, apis, args);
+      const variable =
+        node.left.type === 'Identifier'
+          ? transpileNode(node.left, apis, args)
+          : transpilePattern(node.left, apis, args);
       const value = transpileNode(node.right, apis, args);
       return `(${variable} = ${value})`;
     }

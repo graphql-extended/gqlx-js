@@ -19,8 +19,11 @@ function createResolver(name: string, type: string, field: string) {
   switch (type) {
     case 'Subscription':
       return createSubscriptionResolver(name, type, field);
-    default:
+    case 'Query':
+    case 'Mutation':
       return createStandardResolver(name, type, field);
+    default:
+      throw new Error(`Invalid type used. Expected 'Subscription', 'Query', or 'Mutation', but received '${type}'.`);
   }
 }
 

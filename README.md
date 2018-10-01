@@ -117,6 +117,14 @@ The core language is pretty much defined by GraphQL and JavaScript (officially E
 
 Directives are nice and certainly could be used to solve the problem partially, however, given that we do not only want to specify what endpoint to call, but also how to call it and where to direct the potential arguments to makes using directives rather cumbersome. Also we want to be able to combine different (lower level) API calls to new GraphQL offerings, as well as use other logic. Given all requirements an extension to the original specification seemed natural.
 
+*How to make calls in parallel?*
+
+Parallel calls are supported by using the `map` function of an array. When gqlx detects multiple promises it automatically creates a `Promise.all` wrapper, which is awaited.
+
+*Is there a way to debug the generated function?*
+
+By default, all helpful debug statements (e.g., `debugger;` or using `console`) are disabled. They can be enabled with the `debug` option. Furthermore, custom debug statements can be introduced. Any other ideas are much appreciated and should be gathered at the issues board.
+
 ## Changelog
 
 This project adheres to [semantic versioning](https://semver.org).
