@@ -54,7 +54,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return use(await _0.items, (async ([item]) => { (item = ((item) ? (item) : (await (async () => { return await $api.post('api/bar', ({  })); })()))); return await $api.post(`api/foo/${$data.id}`, ({ target: item.id })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(await _0.items, (async ([item]) => { (item = ((item) ? (item) : (await $api.post('api/bar', ({  }))))); return await $api.post(`api/foo/${$data.id}`, ({ target: item.id })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -75,7 +75,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return use(await _0.items, (async ([item]) => { if ((!item)) { (item = await $api.post('api/bar')); } return item; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(await _0.items, (async ([item]) => { if ((!item)) { (item = await $api.post('api/bar')); } return item; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -96,7 +96,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return use(await _0.items, (async ([item]) => { if ((!item)) { return await $api.post('api/bar'); } else { return item; } })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/foo'); return await use(await _0.items, (async ([item]) => { if ((!item)) { return await $api.post('api/bar'); } else { return item; } })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
