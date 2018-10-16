@@ -1,5 +1,10 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.1.5
+
+- Specify browser capabilities for bundling in FE apps
+- Include original sources in package
+
 ## 0.1.4
 
 - Support for if / for / while in block statements
