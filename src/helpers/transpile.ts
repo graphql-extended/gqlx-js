@@ -65,7 +65,7 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
 
           if (x.type === 'SpreadElement') {
             const arg = transpileNode(x.argument, apis, args);
-            return `...${arg}`;
+            return `...(${arg})`;
           }
 
           const key = transpileNode(p.key, apis, []);

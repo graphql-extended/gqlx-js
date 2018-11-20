@@ -15,6 +15,7 @@ import {
   IfStatement,
   DebuggerStatement,
   DoWhileStatement,
+  SpreadElement,
 } from 'estree';
 
 export type ExpressionNode =
@@ -29,6 +30,7 @@ export type ExpressionNode =
   | ReturnStatement
   | ExpressionStatement
   | VariableDeclaration
+  | SpreadElement
   | Property;
 
 export function mayBeAsync(node: ExpressionNode) {

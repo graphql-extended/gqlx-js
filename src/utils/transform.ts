@@ -1,5 +1,5 @@
 import { DynamicGqlSchema, AvailableApi, Connectors, GqlTransformOptions } from '../types';
-import { Expression, BlockStatement, CallExpression, ArrowFunctionExpression, ConditionalExpression } from 'estree';
+import { Expression, BlockStatement, CallExpression, ArrowFunctionExpression } from 'estree';
 import {
   getArguments,
   ExpressionNode,
@@ -11,7 +11,7 @@ import {
   awaitMap,
 } from '../helpers';
 
-const walk = require('acorn/dist/walk');
+const walk = require('acorn-walk');
 
 function transformAwait(expr: Expression, apis: Array<string>) {
   const generate = createGenerationMask();

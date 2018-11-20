@@ -185,4 +185,19 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('works with spread of async objects', () => {
+    const source = `type Query {
+      foo: String {
+        { x: '', y: '', ...get('foo') }
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foo:
+          "try { return ({ x: '', y: '', ...(await $api.get('foo')) }); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
 });

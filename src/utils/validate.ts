@@ -23,7 +23,7 @@ interface Continuation {
 
 const debugNames = ['console', 'assert'];
 const standardNames = ['null', 'undefined', 'Array', 'Object', 'Math'];
-const walk = require('acorn/dist/walk');
+const walk = require('acorn-walk');
 
 function check(exp: Expression, variables: Array<string>, debug = false) {
   walk.recursive(

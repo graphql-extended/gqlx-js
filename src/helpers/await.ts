@@ -78,6 +78,8 @@ export function awaitCall(
         } else {
           ancestor.alternate = wrapInAwait(child);
         }
+      } else if (ancestor.type === 'SpreadElement') {
+        ancestor.argument = wrapInAwait(ancestor.argument);
       } else {
         continue;
       }
