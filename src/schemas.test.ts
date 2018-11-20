@@ -200,4 +200,18 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('works with assigning property names in object declarations', () => {
+    const source = `type Query {
+      foo: String {
+        { [c.id]: c }
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foo: 'try { return ({ [c.id]: c }); } catch (err) { throw new Error(JSON.stringify(err)); }',
+      },
+    });
+  });
 });

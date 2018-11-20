@@ -72,7 +72,7 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
 
           if (!p.shorthand || args.includes(key)) {
             const value = transpileNode(p.value as any, apis, args);
-            return `${key}: ${value}`;
+            return p.computed ? `[${key}]: ${value}` : `${key}: ${value}`;
           }
 
           return key;
