@@ -1,5 +1,10 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.0
+
+- Fixed bug in parenthesis evaluation
+- Emit consistent error object incl. diagonstic information
+
 ## 0.1.6
 
 - Updated dependencies due to CVE-2018-16469
@@ -15,7 +20,7 @@
 
 ## 0.1.4
 
-- Support for if / for / while in block statements
+- Support for `if` / `for` / `while` in block statements
 - Fixed unnecessary use of `await`
 - Support for debugger mode
 

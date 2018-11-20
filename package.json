@@ -1,7 +1,7 @@
 {
   "name": "gqlx-js",
   "description": "GraphQL eXtended language and tools library for Node.js / JS applications.",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "main": "dist",
   "types": "dist",
   "license": "MIT",
