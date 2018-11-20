@@ -185,6 +185,9 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
     case 'DebuggerStatement': {
       return 'debugger;';
     }
+    case 'ParenthesizedExpression': {
+      return transpileNode(node.expression, apis, args);
+    }
     default:
       return '';
   }

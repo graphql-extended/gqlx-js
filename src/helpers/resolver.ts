@@ -1,33 +1,21 @@
 import { parseExpressionAt } from 'acorn';
 import { Position } from '../types';
-
-const whitespace = /\s/;
-
-function isSkipable(chr: string, paren: string) {
-  return whitespace.test(chr) || chr === paren;
-}
+import { GqlxError } from '../GqlxError';
 
 export function getResolver(source: string, offset: number): Position {
-  const start = offset;
-  let parens = 0;
-
-  while (isSkipable(source[offset], '(')) {
-    parens += +(source[offset++] === '(');
+  try {
+    const exp = parseExpressionAt(source, offset, {
+      ecmaVersion: 9 as any,
+      preserveParens: true,
+      locations: true,
+      ranges: true,
+    });
+    return exp as any;
+  } catch (e) {
+    throw new GqlxError(`Error in resolver: ${e.message}`, {
+      range: [e.pos, e.raisedAt],
+      column: e.loc.column,
+      line: e.loc.line,
+    });
   }
-
-  const exp = parseExpressionAt(source, offset, {
-    ecmaVersion: 9 as any,
-  });
-
-  while (isSkipable(source[exp.end], ')')) {
-    parens -= +(source[exp.end++] === ')');
-  }
-
-  if (parens !== 0) {
-    throw new Error(
-      `Found invalid schema. Inbalanced parentheses (counted ${parens}) detected starting at position ${start}.`,
-    );
-  }
-
-  return exp as any;
 }

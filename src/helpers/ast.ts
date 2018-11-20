@@ -18,6 +18,11 @@ import {
   SpreadElement,
 } from 'estree';
 
+export interface ParenthesizedNode {
+  type: 'ParenthesizedExpression';
+  expression: ExpressionNode;
+}
+
 export type ExpressionNode =
   | Expression
   | Super
@@ -31,6 +36,7 @@ export type ExpressionNode =
   | ExpressionStatement
   | VariableDeclaration
   | SpreadElement
+  | ParenthesizedNode
   | Property;
 
 export function mayBeAsync(node: ExpressionNode) {

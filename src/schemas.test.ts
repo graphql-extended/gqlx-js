@@ -215,7 +215,7 @@ describe('getConnectors', () => {
     });
   });
 
-  it('works with any number of parantheses', () => {
+  it('works with any number of parenthesis', () => {
     const source = `type Query {
       foo: String {
         ({ x, y })
@@ -242,6 +242,39 @@ describe('getConnectors', () => {
       Query: {
         reorderRules:
           "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/rule'), (async ({ items }) => { return await Promise.all(items.map(((rule) => { return $api.put('api/rule/'); }))); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
+
+  it('works with parenthesis starting but not ending', () => {
+    const source = `type Query {
+      items(hashes: [String]): [Item] {
+        (hashes && hashes.length) ? (
+          post('api/item')
+        ) : (
+          get('api/item')
+        )
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        items:
+          "try { return ((($data.hashes && $data.hashes.length)) ? (await $api.post('api/item')) : (await $api.get('api/item'))); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
+
+  it('ignores arbitrary parenthesis', () => {
+    const source = `type Query {
+      items: [Item] {
+        { a: (((3))) + (((4) - 5)), b: (('foo')) }
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        items: "try { return ({ a: (3 + (4 - 5)), b: 'foo' }); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });

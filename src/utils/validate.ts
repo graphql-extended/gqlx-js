@@ -7,10 +7,12 @@ import {
   ArrowFunctionExpression,
   VariableDeclaration,
   UnaryExpression,
+  BaseNodeWithoutComments,
 } from 'estree';
+import { assertValidSchema, buildSchema } from 'graphql';
 import { DynamicGqlSchema, AvailableApi, GqlTransformOptions } from '../types';
 import { getArguments, getNames, inbuiltFunctionNames } from '../helpers';
-import { assertValidSchema, buildSchema } from 'graphql';
+import { GqlxError, getErrorLocation } from '../GqlxError';
 
 interface ExpressionState {
   stack: Array<Expression>;
@@ -47,8 +49,9 @@ function check(exp: Expression, variables: Array<string>, debug = false) {
           const all = [...variables, ...state.parameters];
 
           if (!all.includes(node.name)) {
-            throw new Error(
+            throw new GqlxError(
               `The variable "${node.name}" is not available in the current context. Available: ${all.join(', ')}.`,
+              getErrorLocation(node),
             );
           }
         }
@@ -68,26 +71,44 @@ function check(exp: Expression, variables: Array<string>, debug = false) {
         const names = getNames(node.params);
         cont(node.body, { ...state, parameters: [...state.parameters, ...names] });
       },
-      FunctionExpression() {
-        throw new Error('Using `function` is not allowed. Use arrow functions ("=>") instead.');
+      FunctionExpression(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Using `function` is not allowed. Use arrow functions ("=>") instead.',
+          getErrorLocation(node),
+        );
       },
-      FunctionDeclaration() {
-        throw new Error('Declaring a new `function` is not allowed. Only anonymous functions ("=>") can be used.');
+      FunctionDeclaration(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Declaring a new `function` is not allowed. Only anonymous functions ("=>") can be used.',
+          getErrorLocation(node),
+        );
       },
-      ThisExpression() {
-        throw new Error('Using `this` is not allowed. The context is only given explicitly.');
+      ThisExpression(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Using `this` is not allowed. The context is only given explicitly.',
+          getErrorLocation(node),
+        );
       },
-      AwaitExpression() {
-        throw new Error('Using `await` is not allowed. Asynchronous calls are automatically wrapped.');
+      AwaitExpression(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Using `await` is not allowed. Asynchronous calls are automatically wrapped.',
+          getErrorLocation(node),
+        );
       },
       UnaryExpression(node: UnaryExpression) {
         if (node.operator === 'delete') {
-          throw new Error('Using `delete` is not allowed. Use the spread operator instead.');
+          throw new GqlxError(
+            'Using `delete` is not allowed. Use the spread operator instead.',
+            getErrorLocation(node),
+          );
         }
       },
-      DebuggerStatement() {
+      DebuggerStatement(node: BaseNodeWithoutComments) {
         if (!debug) {
-          throw new Error('The debugger statement can only be used with enabled debug option.');
+          throw new GqlxError(
+            'The debugger statement can only be used with enabled debug option.',
+            getErrorLocation(node),
+          );
         }
       },
     },
