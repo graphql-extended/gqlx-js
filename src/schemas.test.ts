@@ -214,4 +214,18 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('works with any number of parantheses', () => {
+    const source = `type Query {
+      foo: String {
+        ({ x, y })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foo: 'try { return ({ x, y }); } catch (err) { throw new Error(JSON.stringify(err)); }',
+      },
+    });
+  });
 });
