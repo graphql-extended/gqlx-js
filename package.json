@@ -39,6 +39,7 @@
     "graphql": "0.14.x || 0.13.x || 0.12.x || 0.11.x || 0.10.x"
   },
   "dependencies": {
-    "acorn": "^5.7.1"
+    "acorn": "^6.0.4",
+    "acorn-walk": "^6.1.1"
   }
 }
