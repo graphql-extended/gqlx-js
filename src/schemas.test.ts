@@ -181,7 +181,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo:
-          "try { const _0 = await $api.get('api/items'); return await _0.map((async (item) => { return await $api.get(`api/item/${item.id}`); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+          "try { const _0 = await $api.get('api/items'); return await Promise.all(_0.map((async (item) => { return await $api.get(`api/item/${item.id}`); }))); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -225,6 +225,23 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         foo: 'try { return ({ x, y }); } catch (err) { throw new Error(JSON.stringify(err)); }',
+      },
+    });
+  });
+
+  it('works with nested Promise.all calls', () => {
+    const source = `type Query {
+      reorderRules(rules: [ReorderRule]): [Rule] {
+        use(get('api/rule'), ({ items }) => {
+          return items.map(rule => put('api/rule/'));
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        reorderRules:
+          "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/rule'), (async ({ items }) => { return await Promise.all(items.map(((rule) => { return $api.put('api/rule/'); }))); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });

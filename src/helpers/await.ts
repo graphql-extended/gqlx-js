@@ -32,6 +32,21 @@ function placeAsyncLambda(ancestors: Array<ExpressionNode>, variables: Array<str
   }
 }
 
+function placeInAsyncMap(node: CallExpression, previous: ExpressionNode) {
+  switch (previous.type) {
+    case 'ReturnStatement':
+      previous.argument = wrapInAwait(wrapInPromiseAll(node));
+      break;
+    case 'MemberExpression':
+      previous.object = wrapInAwait(wrapInPromiseAll(node));
+      break;
+  }
+}
+
+function isAll(callee: ExpressionNode) {
+  return callee.type === 'MemberExpression' && callee.property.type === 'Identifier' && callee.property.name === 'map';
+}
+
 export function awaitCall(
   node: Expression,
   ancestors: Array<ExpressionNode>,
@@ -58,6 +73,8 @@ export function awaitCall(
       } else if (ancestor.type === 'CallExpression' && child.type !== 'ArrowFunctionExpression') {
         const argIndex = ancestor.arguments.findIndex(m => m === child);
         ancestor.arguments[argIndex] = wrapInAwait(child);
+      } else if (ancestor.type === 'CallExpression' && isAll(ancestor.callee)) {
+        placeInAsyncMap(ancestor, ancestors[i - 1]);
       } else if (ancestor.type === 'AssignmentExpression') {
         ancestor.right = wrapInAwait(ancestor.right);
       } else if (ancestor.type === 'BinaryExpression') {
@@ -87,24 +104,5 @@ export function awaitCall(
       placeAsyncLambda(ancestors, variables, i);
       break;
     }
-  }
-}
-
-export function awaitMap(node: CallExpression, ancestors: Array<ExpressionNode>, variables: Array<string>) {
-  const lambda = node.arguments && node.arguments[0];
-
-  if (lambda && lambda.type === 'ArrowFunctionExpression' && lambda.async === true) {
-    const previous = ancestors[ancestors.length - 2];
-
-    switch (previous.type) {
-      case 'ReturnStatement':
-        previous.argument = wrapInPromiseAll(node);
-        break;
-      case 'MemberExpression':
-        previous.object = wrapInPromiseAll(node);
-        break;
-    }
-
-    awaitCall(node, ancestors, variables);
   }
 }

@@ -8,7 +8,6 @@ import {
   transpileNode,
   createGenerationMask,
   awaitCall,
-  awaitMap,
 } from '../helpers';
 
 const walk = require('acorn-walk');
@@ -53,12 +52,6 @@ function transformAwait(expr: Expression, apis: Array<string>) {
         } else if (typeof generate[name] === 'boolean') {
           generate[name] = true;
         }
-      } else if (
-        callee.type === 'MemberExpression' &&
-        callee.property.type === 'Identifier' &&
-        callee.property.name === 'map'
-      ) {
-        awaitMap(node, ancestors, variables);
       }
     },
   });
