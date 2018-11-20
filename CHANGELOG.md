@@ -1,5 +1,13 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.1.6
+
+- Updated dependencies due to CVE-2018-16469
+- Fixed bug related to object with parantheses (#2)
+- Fixed bug related to spread return (#3)
+- Fixed bug related to assign property name (#4)
+- Fixed bug related to nested `Promise.all` (#5)
+
 ## 0.1.5
 
 - Specify browser capabilities for bundling in FE apps
