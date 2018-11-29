@@ -10,15 +10,33 @@ import {
   VariableDeclaration,
   Property,
   BinaryExpression,
+  WhileStatement,
+  ForStatement,
+  IfStatement,
+  DebuggerStatement,
+  DoWhileStatement,
+  SpreadElement,
 } from 'estree';
+
+export interface ParenthesizedNode {
+  type: 'ParenthesizedExpression';
+  expression: ExpressionNode;
+}
 
 export type ExpressionNode =
   | Expression
   | Super
   | BlockStatement
+  | IfStatement
+  | WhileStatement
+  | DoWhileStatement
+  | ForStatement
+  | DebuggerStatement
   | ReturnStatement
   | ExpressionStatement
   | VariableDeclaration
+  | SpreadElement
+  | ParenthesizedNode
   | Property;
 
 export function mayBeAsync(node: ExpressionNode) {
@@ -26,6 +44,10 @@ export function mayBeAsync(node: ExpressionNode) {
 }
 
 export function wrapInAwait(argument: any): AwaitExpression {
+  if (argument.type === 'AwaitExpression') {
+    return argument;
+  }
+
   return {
     type: 'AwaitExpression',
     argument,
@@ -113,10 +135,5 @@ export function insertNewValue(statements: Array<Statement>, name: string, init:
 }
 
 export function insertAwaitedValue(statements: Array<Statement>, name: string, argument: Expression, offset = 1) {
-  insertNewValue(
-    statements,
-    name,
-    wrapInAwait(argument),
-    offset,
-  );
+  insertNewValue(statements, name, wrapInAwait(argument), offset);
 }

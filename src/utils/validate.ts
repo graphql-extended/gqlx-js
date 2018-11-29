@@ -7,10 +7,12 @@ import {
   ArrowFunctionExpression,
   VariableDeclaration,
   UnaryExpression,
+  BaseNodeWithoutComments,
 } from 'estree';
-import { DynamicGqlSchema, AvailableApi } from '../types';
-import { getArguments, getNames, inbuiltFunctionNames } from '../helpers';
 import { assertValidSchema, buildSchema } from 'graphql';
+import { DynamicGqlSchema, AvailableApi, GqlTransformOptions } from '../types';
+import { getArguments, getNames, inbuiltFunctionNames } from '../helpers';
+import { GqlxError, getErrorLocation } from '../GqlxError';
 
 interface ExpressionState {
   stack: Array<Expression>;
@@ -21,14 +23,16 @@ interface Continuation {
   (node: BaseNode, state: ExpressionState): void;
 }
 
-const walk = require('acorn/dist/walk');
+const debugNames = ['console', 'assert'];
+const standardNames = ['null', 'undefined', 'Array', 'Object', 'Math'];
+const walk = require('acorn-walk');
 
-function check(exp: Expression, variables: Array<string>) {
+function check(exp: Expression, variables: Array<string>, debug = false) {
   walk.recursive(
     exp,
     {
       stack: [],
-      parameters: [...inbuiltFunctionNames, 'null', 'undefined', 'Array', 'Object', 'Math'],
+      parameters: [...inbuiltFunctionNames, ...standardNames, ...(debug ? debugNames : [])],
     },
     {
       CallExpression(node: CallExpression, state: ExpressionState, cont: Continuation) {
@@ -44,9 +48,10 @@ function check(exp: Expression, variables: Array<string>) {
         if (!last || last.type === 'CallExpression') {
           const all = [...variables, ...state.parameters];
 
-          if (all.indexOf(node.name) === -1) {
-            throw new Error(
+          if (!all.includes(node.name)) {
+            throw new GqlxError(
               `The variable "${node.name}" is not available in the current context. Available: ${all.join(', ')}.`,
+              getErrorLocation(node),
             );
           }
         }
@@ -66,28 +71,51 @@ function check(exp: Expression, variables: Array<string>) {
         const names = getNames(node.params);
         cont(node.body, { ...state, parameters: [...state.parameters, ...names] });
       },
-      FunctionExpression() {
-        throw new Error('Using `function` is not allowed. Use arrow functions ("=>") instead.');
+      FunctionExpression(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Using `function` is not allowed. Use arrow functions ("=>") instead.',
+          getErrorLocation(node),
+        );
       },
-      FunctionDeclaration() {
-        throw new Error('Declaring a new `function` is not allowed. Only anonymous functions ("=>") can be used.');
+      FunctionDeclaration(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Declaring a new `function` is not allowed. Only anonymous functions ("=>") can be used.',
+          getErrorLocation(node),
+        );
       },
-      ThisExpression() {
-        throw new Error('Using `this` is not allowed. The context is only given explicitly.');
+      ThisExpression(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Using `this` is not allowed. The context is only given explicitly.',
+          getErrorLocation(node),
+        );
       },
-      AwaitExpression() {
-        throw new Error('Using `await` is not allowed. Asynchronous calls are automatically wrapped.');
+      AwaitExpression(node: BaseNodeWithoutComments) {
+        throw new GqlxError(
+          'Using `await` is not allowed. Asynchronous calls are automatically wrapped.',
+          getErrorLocation(node),
+        );
       },
       UnaryExpression(node: UnaryExpression) {
         if (node.operator === 'delete') {
-          throw new Error('Using `delete` is not allowed. Use the spread operator instead.');
+          throw new GqlxError(
+            'Using `delete` is not allowed. Use the spread operator instead.',
+            getErrorLocation(node),
+          );
+        }
+      },
+      DebuggerStatement(node: BaseNodeWithoutComments) {
+        if (!debug) {
+          throw new GqlxError(
+            'The debugger statement can only be used with enabled debug option.',
+            getErrorLocation(node),
+          );
         }
       },
     },
   );
 }
 
-export function validate(gql: DynamicGqlSchema, api: AvailableApi) {
+export function validate(gql: DynamicGqlSchema, api: AvailableApi, options?: GqlTransformOptions) {
   const keys = Object.keys(gql.resolvers);
   const fns = Object.keys(api);
   const schema = buildSchema(gql.schema.text);
@@ -100,7 +128,7 @@ export function validate(gql: DynamicGqlSchema, api: AvailableApi) {
       const resolver = resolvers[type];
       const args = getArguments(gql.schema.ast, key, type);
       const variables = [...fns, ...args];
-      check(resolver, variables);
+      check(resolver, variables, options && options.debug);
     }
   }
 

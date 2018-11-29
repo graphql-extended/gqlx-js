@@ -16,6 +16,8 @@ This library offers support for a new way of writing GraphQL schemas called **gq
 
 For more information on GraphQL and learning material, see [GraphQL College](https://www.graphql.college/practice-graphql/). The specification of the gqlx language is available [on GitHub](https://github.com/graphql-extended/gqlx-spec). Herein we will only present a few examples.
 
+**Why?** The basic problem that gqlx solves is to offer a safe (i.e., sandboxed) mechanism to not only transport schemas, but also (potentially complicated) ways how to resolve resources of such schemas. gqlx was invented to decouple RESTful microservices from a GraphQL gateway. The services could just place gqlx on a common service registry, which was then picked up by the gateway. This allows faster development without sacrificing anything on the security or performance side.
+
 ### Resolver Syntax
 
 The syntax follows the official specification. For more details see the [specification's GitHub repository](https://github.com/graphql-extended/gqlx-spec).
@@ -110,6 +112,18 @@ We are totally open for contribution and appreciate any feedback, bug reports, o
 *How much can be customized?*
 
 The core language is pretty much defined by GraphQL and JavaScript (officially ECMAScript version 6, abbr. ES6). Currently, all customizations need to take place within the ECMAScript layer, e.g., by defining new / changing existing API functions or inbuilt functions (i.e., macros).
+
+*Why not just use a directive?*
+
+Directives are nice and certainly could be used to solve the problem partially, however, given that we do not only want to specify what endpoint to call, but also how to call it and where to direct the potential arguments to makes using directives rather cumbersome. Also we want to be able to combine different (lower level) API calls to new GraphQL offerings, as well as use other logic. Given all requirements an extension to the original specification seemed natural.
+
+*How to make calls in parallel?*
+
+Parallel calls are supported by using the `map` function of an array. When gqlx detects multiple promises it automatically creates a `Promise.all` wrapper, which is awaited.
+
+*Is there a way to debug the generated function?*
+
+By default, all helpful debug statements (e.g., `debugger;` or using `console`) are disabled. They can be enabled with the `debug` option. Furthermore, custom debug statements can be introduced. Any other ideas are much appreciated and should be gathered at the issues board.
 
 ## Changelog
 

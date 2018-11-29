@@ -2,7 +2,7 @@ import { Pattern, MemberExpression } from 'estree';
 import { ExpressionNode } from './ast';
 
 export function transpileMember(obj: MemberExpression, apis: Array<string>, args: Array<string>): string {
-  const rhs = transpileNode(obj.property, apis, args);
+  const rhs = obj.property.type === 'Identifier' ? obj.property.name : transpileNode(obj.property, apis, args);
   const prop = obj.computed ? `[${rhs}]` : `.${rhs}`;
   return `${transpileNode(obj.object, apis, args)}${prop}`;
 }
@@ -65,14 +65,14 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
 
           if (x.type === 'SpreadElement') {
             const arg = transpileNode(x.argument, apis, args);
-            return `...${arg}`;
+            return `...(${arg})`;
           }
 
           const key = transpileNode(p.key, apis, []);
 
           if (!p.shorthand || args.indexOf(key) >= 0) {
             const value = transpileNode(p.value as any, apis, args);
-            return `${key}: ${value}`;
+            return p.computed ? `[${key}]: ${value}` : `${key}: ${value}`;
           }
 
           return key;
@@ -111,7 +111,10 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       return `(${left} ${node.operator} ${right})`;
     }
     case 'AssignmentExpression': {
-      const variable = transpilePattern(node.left, apis, args);
+      const variable =
+        node.left.type === 'Identifier'
+          ? transpileNode(node.left, apis, args)
+          : transpilePattern(node.left, apis, args);
       const value = transpileNode(node.right, apis, args);
       return `(${variable} = ${value})`;
     }
@@ -141,6 +144,29 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       const statements = node.body.map(stmt => transpileNode(stmt as any, apis, args)).join(' ');
       return `{ ${statements} }`;
     }
+    case 'IfStatement': {
+      const condition = transpileNode(node.test, apis, args);
+      const primary = transpileNode(node.consequent as any, apis, args);
+      const rest = node.alternate ? ` else ${transpileNode(node.alternate as any, apis, args)}` : '';
+      return `if (${condition}) ${primary}${rest}`;
+    }
+    case 'WhileStatement': {
+      const condition = transpileNode(node.test, apis, args);
+      const body = transpileNode(node.body as any, apis, args);
+      return `while (${condition}) ${body}`;
+    }
+    case 'DoWhileStatement': {
+      const condition = transpileNode(node.test, apis, args);
+      const body = transpileNode(node.body as any, apis, args);
+      return `do ${body} while (${condition});`;
+    }
+    case 'ForStatement': {
+      const init = node.init ? transpileNode(node.init, apis, args).replace(/;$/, '') : '';
+      const test = node.test ? transpileNode(node.test, apis, args) : '';
+      const update = node.update ? transpileNode(node.update, apis, args) : '';
+      const body = transpileNode(node.body as any, apis, args);
+      return `for (${init}; ${test}; ${update}) ${body}`;
+    }
     case 'ArrowFunctionExpression': {
       const params = node.params.map(p => transpilePattern(p, apis, args)).join(', ');
       const body = transpileNode(node.body as any, apis, args);
@@ -155,6 +181,12 @@ export function transpileNode(node: ExpressionNode, apis: Array<string>, args: A
       }
 
       return node.name;
+    }
+    case 'DebuggerStatement': {
+      return 'debugger;';
+    }
+    case 'ParenthesizedExpression': {
+      return transpileNode(node.expression, apis, args);
     }
     default:
       return '';

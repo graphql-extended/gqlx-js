@@ -1,29 +1,20 @@
 import { DynamicGqlSchema, AvailableApi, Connectors, GqlTransformOptions } from '../types';
-import {
-  Expression,
-  Pattern,
-  BlockStatement,
-  CallExpression,
-  ArrowFunctionExpression,
-  ConditionalExpression,
-} from 'estree';
+import { Expression, BlockStatement, CallExpression, ArrowFunctionExpression } from 'estree';
 import {
   getArguments,
   ExpressionNode,
   mayBeAsync,
-  wrapInAwait,
-  wrapInLambda,
   generateHelpers,
-  insertAwaitedValue,
-  wrapInPromiseAll,
   transpileNode,
   createGenerationMask,
+  awaitCall,
 } from '../helpers';
 
-const walk = require('acorn/dist/walk');
+const walk = require('acorn-walk');
 
 function transformAwait(expr: Expression, apis: Array<string>) {
   const generate = createGenerationMask();
+  const variables: Array<string> = [];
   const block: BlockStatement = {
     body: [
       {
@@ -33,11 +24,10 @@ function transformAwait(expr: Expression, apis: Array<string>) {
     ],
     type: 'BlockStatement',
   };
-  let numValue = 0;
 
-  walk.simple(block, {
+  walk.ancestor(block, {
     ArrowFunctionExpression(node: ArrowFunctionExpression) {
-      const body = node.body;
+      const { body } = node;
 
       if (mayBeAsync(body)) {
         node.body = {
@@ -51,114 +41,23 @@ function transformAwait(expr: Expression, apis: Array<string>) {
         };
       }
     },
-    CallExpression(node: CallExpression) {
-      if (node.callee.type === 'Identifier') {
-        const name = node.callee.name;
+    CallExpression(node: CallExpression, ancestors: Array<ExpressionNode>) {
+      const { callee } = node;
 
-        if (typeof generate[name] === 'boolean') {
+      if (callee.type === 'Identifier') {
+        const name = callee.name;
+
+        if (ancestors.length > 1 && apis.includes(name)) {
+          awaitCall(node, ancestors, variables);
+        } else if (typeof generate[name] === 'boolean') {
           generate[name] = true;
         }
-      }
-    },
-    ConditionalExpression(node: ConditionalExpression) {
-      if (mayBeAsync(node.alternate)) {
-        node.alternate = wrapInAwait(wrapInLambda(node.alternate));
-      }
-
-      if (mayBeAsync(node.consequent)) {
-        node.consequent = wrapInAwait(wrapInLambda(node.consequent));
       }
     },
   });
 
   generateHelpers(generate, block);
 
-  walk.ancestor(block, {
-    CallExpression(node: CallExpression, ancestors: Array<ExpressionNode>) {
-      const { callee } = node;
-
-      if (ancestors.length > 1 && callee.type === 'Identifier' && apis.indexOf(callee.name) >= 0) {
-        let tempVar = '';
-
-        for (let i = ancestors.length; i--; ) {
-          const ancestor = ancestors[i];
-
-          if (tempVar && ancestor.type === 'BlockStatement') {
-            insertAwaitedValue(ancestor.body, tempVar, node);
-          } else if (!tempVar && ancestor.type === 'ReturnStatement') {
-            const arg = ancestors[i + 1];
-            ancestor.argument = wrapInAwait(arg);
-          } else if (!tempVar && ancestor.type === 'Property') {
-            const arg = ancestors[i + 1];
-            ancestor.value = wrapInAwait(arg);
-          } else if (ancestor.type === 'ArrowFunctionExpression') {
-            ancestor.async = true;
-            break;
-          } else if (!tempVar && ancestor.type === 'MemberExpression') {
-            tempVar = `_${numValue++}`;
-            ancestor.object = {
-              type: 'Identifier',
-              name: tempVar,
-            };
-          } else if (ancestor.type === 'CallExpression' && ancestor !== node) {
-            const arg = ancestors[i + 1];
-            const argIndex = ancestor.arguments.findIndex(m => m === arg);
-            ancestor.arguments[argIndex] = wrapInAwait(arg);
-          }
-        }
-      }
-
-      if (
-        callee.type === 'MemberExpression' &&
-        callee.property.type === 'Identifier' &&
-        callee.property.name === 'map'
-      ) {
-        const lambda = node.arguments && node.arguments[0];
-        // let b = block;
-        // let offset = 1;
-
-        if (lambda && lambda.type === 'ArrowFunctionExpression' && lambda.async === true) {
-          const previous = ancestors[ancestors.length - 2];
-
-          switch (previous.type) {
-            case 'ReturnStatement':
-              previous.argument = wrapInPromiseAll(node);
-              break;
-            case 'MemberExpression':
-              previous.object = wrapInPromiseAll(node);
-              break;
-          }
-
-          for (const ancestor of ancestors) {
-            switch (ancestor.type) {
-              case 'ArrowFunctionExpression':
-                if (!ancestor.async) {
-                  ancestor.async = true;
-                }
-                break;
-              // case 'BlockStatement':
-              //   b = ancestor;
-              //   offset = 1;
-              //   break;
-              case 'ReturnStatement':
-                if (ancestor.argument && ancestor.argument.type !== 'AwaitExpression') {
-                  ancestor.argument = wrapInAwait(ancestor.argument);
-                }
-                break;
-              // case 'MemberExpression':
-              //   const name = `_${numValue++}`;
-              //   insertAwaitedValue(b.body, name, ancestor.object as Expression, offset++);
-              //   ancestor.object = {
-              //     type: 'Identifier',
-              //     name,
-              //   };
-              //   break;
-            }
-          }
-        }
-      }
-    },
-  });
   return block;
 }
 
