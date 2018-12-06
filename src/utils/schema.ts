@@ -74,11 +74,10 @@ export function parseDynamicSchema(input: string): DynamicGqlSchema {
       }
 
       pos.end = token.end;
-      token = lex.advance();
       positions.push(pos);
+    } else {
+      tokens.push(token);
     }
-
-    tokens.push(token);
   }
 
   const text = convertToPureGql(input, positions);
