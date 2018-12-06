@@ -54,16 +54,18 @@ export function wrapInAwait(argument: any): AwaitExpression {
   };
 }
 
-export function wrapInLambda(argument: any): CallExpression {
+export function wrapInLambda(argument: any, statements: Array<Statement> = [], async = false): CallExpression {
   return {
     type: 'CallExpression',
     callee: {
       type: 'ArrowFunctionExpression',
       expression: true,
+      async,
       params: [],
       body: {
         type: 'BlockStatement',
         body: [
+          ...statements,
           {
             type: 'ReturnStatement',
             argument,
@@ -117,8 +119,8 @@ export function wrapInPromiseAll(argument: any): CallExpression {
   };
 }
 
-export function insertNewValue(statements: Array<Statement>, name: string, init: Expression, offset = 1) {
-  statements.splice(statements.length - offset, 0, {
+export function createVariableDeclaration(name: string, init: Expression): VariableDeclaration {
+  return {
     type: 'VariableDeclaration',
     kind: 'const',
     declarations: [
@@ -131,9 +133,17 @@ export function insertNewValue(statements: Array<Statement>, name: string, init:
         type: 'VariableDeclarator',
       },
     ],
-  });
+  };
+}
+
+export function insertNewValue(statements: Array<Statement>, name: string, init: Expression, offset = 1) {
+  statements.splice(statements.length - offset, 0, createVariableDeclaration(name, init));
 }
 
 export function insertAwaitedValue(statements: Array<Statement>, name: string, argument: Expression, offset = 1) {
   insertNewValue(statements, name, wrapInAwait(argument), offset);
+}
+
+export function wrapInFunctionBlock(child: Expression, name: string, argument: Expression) {
+  return wrapInLambda(child, [createVariableDeclaration(name, wrapInAwait(argument))], true);
 }

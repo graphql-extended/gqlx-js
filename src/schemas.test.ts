@@ -323,4 +323,18 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('should respect lazy loading also in conditionals', () => {
+    const source = `type Query {
+      items(arg: String): [Translation] {
+        arg ? get('a').snippets.map(snippet => ({ ...snippet, arg })) : get('b')
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        items: "try { return (($data.arg) ? ((async () => { const _0 = await $api.get('a'); return _0.snippets.map(((snippet) => ({ ...(snippet), arg: $data.arg }))); })()) : (await $api.get('b'))); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
 });

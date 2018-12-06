@@ -1,5 +1,5 @@
 import { CallExpression, Expression } from 'estree';
-import { ExpressionNode, wrapInPromiseAll, wrapInAwait, insertAwaitedValue } from './ast';
+import { ExpressionNode, wrapInPromiseAll, wrapInAwait, insertAwaitedValue, wrapInFunctionBlock } from './ast';
 
 function placeVariableClosestBlock(
   node: Expression,
@@ -16,6 +16,14 @@ function placeVariableClosestBlock(
       const offset = ancestor.body.length - position;
       insertAwaitedValue(ancestor.body, variable, node, offset);
       break;
+    } else if (ancestor.type === 'ConditionalExpression') {
+      if (ancestor.consequent === child) {
+        ancestor.consequent = wrapInFunctionBlock(child, variable, node);
+        break;
+      } else if (ancestor.alternate === child) {
+        ancestor.alternate = wrapInFunctionBlock(child, variable, node);
+        break;
+      }
     }
   }
 }
