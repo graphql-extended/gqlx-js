@@ -65,7 +65,7 @@ function transpileSource(node: Expression, api: AvailableApi, args: Array<string
   const apiNames = Object.keys(api);
   const asyncApiNames = apiNames.filter(m => api[m]);
   const block = transformAwait(node, asyncApiNames);
-  return transpileNode(block, apiNames, args);
+  return transpileNode(block, apiNames, args, []);
 }
 
 function defaultWrapper(block: string) {

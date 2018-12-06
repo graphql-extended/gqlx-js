@@ -17,6 +17,7 @@ describe('transpileNode', () => {
       },
       [],
       ['a'],
+      [],
     );
     expect(result).toBe('($data.a + b)');
   });
@@ -43,6 +44,7 @@ describe('transpileNode', () => {
       },
       [],
       ['a'],
+      [],
     );
     expect(result).toBe('f($data.a, 10)');
   });

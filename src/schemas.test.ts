@@ -278,4 +278,30 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('always respects local variables before data arguments', () => {
+    const source = `type Translation {
+      key: String
+      content: String
+      language: String
+    }
+
+    type Query {
+      items(language: String): [Translation] {
+        use(get('api/snippet'), res => {
+          const { snippets, languages } = res;
+
+          languages.forEach(language => {
+            snippets[language].map(snippet => ({ ...snippet, language }));
+          });
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        items: "try { const use = ((x, cb) => cb(x)); return use(await $api.get('api/snippet'), ((res) => { const { snippets, languages } = res; languages.forEach(((language) => { snippets[language].map(((snippet) => ({ ...(snippet), language: language }))); })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
 });
