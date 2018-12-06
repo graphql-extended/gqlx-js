@@ -211,6 +211,10 @@ export function transpileNode(
     case 'Identifier': {
       return getIdentifier(node.name, apis, args, locals);
     }
+    case 'SpreadElement': {
+      const rest = transpileNode(node.argument, apis, args, locals);
+      return `...${rest}`;
+    }
     case 'DebuggerStatement': {
       return 'debugger;';
     }

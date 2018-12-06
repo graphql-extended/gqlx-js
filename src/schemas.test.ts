@@ -300,7 +300,26 @@ describe('getConnectors', () => {
     const result = getConnectors(source);
     expect(result).toEqual({
       Query: {
-        items: "try { const use = ((x, cb) => cb(x)); return use(await $api.get('api/snippet'), ((res) => { const { snippets, languages } = res; languages.forEach(((language) => { snippets[language].map(((snippet) => ({ ...(snippet), language: language }))); })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+        items:
+          "try { const use = ((x, cb) => cb(x)); return use(await $api.get('api/snippet'), ((res) => { const { snippets, languages } = res; languages.forEach(((language) => { snippets[language].map(((snippet) => ({ ...(snippet), language: language }))); })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
+
+  it('includes array spread correctly', () => {
+    const source = `type Query {
+      items: [Item] {
+        use(get('/api/item'), items => {
+          const arr = [];
+          arr.push(...items);
+          return arr;
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        items: "try { const use = ((x, cb) => cb(x)); return use(await $api.get('/api/item'), ((items) => { const arr = []; arr.push(...items); return arr; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
