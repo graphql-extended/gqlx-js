@@ -1,5 +1,15 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.2
+
+- Fixed bug that conditionals do not respect lazy loading (#6)
+- Fixed bug related to broken array spread (#7)
+- Fixed bug related to disrespected of local variable (#8)
+
+## 0.2.1
+
+- Support for UMD bundling
+
 ## 0.2.0
 
 - Fixed bug in parenthesis evaluation

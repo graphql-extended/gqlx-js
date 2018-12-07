@@ -57,7 +57,6 @@ function transformAwait(expr: Expression, apis: Array<string>) {
   });
 
   generateHelpers(generate, block);
-
   return block;
 }
 
@@ -65,7 +64,7 @@ function transpileSource(node: Expression, api: AvailableApi, args: Array<string
   const apiNames = Object.keys(api);
   const asyncApiNames = apiNames.filter(m => api[m]);
   const block = transformAwait(node, asyncApiNames);
-  return transpileNode(block, apiNames, args);
+  return transpileNode(block, apiNames, args, []);
 }
 
 function defaultWrapper(block: string) {
@@ -86,7 +85,8 @@ export function transform(gql: DynamicGqlSchema, api: AvailableApi, options: Gql
       const connector = connectors[key] || (connectors[key] = {});
       const args = getArguments(gql.schema.ast, key, type);
       const block = transpileSource(resolver, api, args);
-      connector[type] = wrapper(block);
+      const source = wrapper(block);
+      connector[type] = source;
     }
   }
 

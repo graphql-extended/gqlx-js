@@ -1,5 +1,12 @@
-import { CallExpression, Expression } from 'estree';
-import { ExpressionNode, wrapInPromiseAll, wrapInAwait, insertAwaitedValue } from './ast';
+import {
+  CallExpression,
+  Expression,
+  BlockStatement,
+  ArrowFunctionExpression,
+  ReturnStatement,
+  AwaitExpression,
+} from 'estree';
+import { ExpressionNode, wrapInPromiseAll, wrapInAwait, insertAwaitedValue, wrapInFunctionBlock } from './ast';
 
 function placeVariableClosestBlock(
   node: Expression,
@@ -15,6 +22,23 @@ function placeVariableClosestBlock(
       const position = ancestor.body.indexOf(child as any);
       const offset = ancestor.body.length - position;
       insertAwaitedValue(ancestor.body, variable, node, offset);
+      break;
+    } else if (ancestor.type === 'ConditionalExpression' && ancestor.test !== child) {
+      const ae = wrapInFunctionBlock(child as Expression, variable, node);
+
+      if (ancestor.consequent === child) {
+        ancestor.consequent = ae;
+      } else if (ancestor.alternate === child) {
+        ancestor.alternate = ae;
+      } else {
+        continue;
+      }
+
+      const ce = ae.argument as CallExpression;
+      const fn = ce.callee as ArrowFunctionExpression;
+      const bs = fn.body as BlockStatement;
+      const rs = bs.body[bs.body.length - 1] as ReturnStatement;
+      ancestors.splice(i, 0, ancestor, ae, ce, fn, bs, rs, child);
       break;
     }
   }
@@ -66,10 +90,13 @@ export function awaitCall(
         const variable = `_${variables.length}`;
         variables.push(variable);
         placeVariableClosestBlock(node, ancestors, variable, i);
+
         ancestor.object = {
           type: 'Identifier',
           name: variable,
         };
+
+        break;
       } else if (ancestor.type === 'CallExpression' && child.type !== 'ArrowFunctionExpression') {
         const argIndex = ancestor.arguments.findIndex(m => m === child);
         ancestor.arguments[argIndex] = wrapInAwait(child);
