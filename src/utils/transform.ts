@@ -57,7 +57,6 @@ function transformAwait(expr: Expression, apis: Array<string>) {
   });
 
   generateHelpers(generate, block);
-
   return block;
 }
 

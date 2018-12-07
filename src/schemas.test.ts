@@ -319,7 +319,8 @@ describe('getConnectors', () => {
     const result = getConnectors(source);
     expect(result).toEqual({
       Query: {
-        items: "try { const use = ((x, cb) => cb(x)); return use(await $api.get('/api/item'), ((items) => { const arr = []; arr.push(...items); return arr; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
+        items:
+          "try { const use = ((x, cb) => cb(x)); return use(await $api.get('/api/item'), ((items) => { const arr = []; arr.push(...items); return arr; })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });
@@ -333,7 +334,37 @@ describe('getConnectors', () => {
     const result = getConnectors(source);
     expect(result).toEqual({
       Query: {
-        items: "try { return (($data.arg) ? ((async () => { const _0 = await $api.get('a'); return _0.snippets.map(((snippet) => ({ ...(snippet), arg: $data.arg }))); })()) : (await $api.get('b'))); } catch (err) { throw new Error(JSON.stringify(err)); }",
+        items:
+          "try { return (($data.arg) ? (await (async () => { const _0 = await $api.get('a'); return _0.snippets.map(((snippet) => ({ ...(snippet), arg: $data.arg }))); })()) : (await $api.get('b'))); } catch (err) { throw new Error(JSON.stringify(err)); }",
+      },
+    });
+  });
+
+  it('should handle all kinds of conditionals', () => {
+    const source = `type Query {
+      test(id: ID): Int {
+        use(get('api/item').items, ([item]) => {
+          item = item ? item : post('api/item', {});
+          id = id ? id : use(get('api/foo')
+            .items.filter(m => m.type === 'bar'), ([foo]) => {
+              foo = foo ? foo : post('api/foo', {
+                name: 'Foo',
+                type: 'bar',
+              });
+              return foo.id;
+            });
+
+          return post(\`api/item/\${id}\`, {
+            target: item.id,
+          });
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        test:
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/item'); return await use(_0.items, (async ([item]) => { (item = ((item) ? (item) : (await $api.post('api/item', ({  }))))); ($data.id = (($data.id) ? ($data.id) : (await (async () => { const _1 = await $api.get('api/foo'); return await use(_1.items.filter(((m) => (m.type === 'bar'))), (async ([foo]) => { (foo = ((foo) ? (foo) : (await $api.post('api/foo', ({ name: 'Foo', type: 'bar' }))))); return foo.id; })); })()))); return await $api.post(`api/item/${$data.id}`, ({ target: item.id })); })); } catch (err) { throw new Error(JSON.stringify(err)); }",
       },
     });
   });

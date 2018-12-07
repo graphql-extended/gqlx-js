@@ -145,5 +145,5 @@ export function insertAwaitedValue(statements: Array<Statement>, name: string, a
 }
 
 export function wrapInFunctionBlock(child: Expression, name: string, argument: Expression) {
-  return wrapInLambda(child, [createVariableDeclaration(name, wrapInAwait(argument))], true);
+  return wrapInAwait(wrapInLambda(child, [createVariableDeclaration(name, wrapInAwait(argument))], true));
 }
