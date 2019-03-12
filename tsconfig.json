@@ -12,6 +12,7 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "lib": [

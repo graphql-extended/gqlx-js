@@ -1,29 +1,35 @@
 import { Pattern } from 'estree';
 
+export function pushName(param: Pattern, names: Array<string>) {
+  switch (param.type) {
+    case 'Identifier':
+      names.push(param.name);
+      break;
+    case 'ArrayPattern':
+      names.push(...getNames(param.elements));
+      break;
+    case 'AssignmentPattern':
+      pushName(param.left, names);
+      break;
+    case 'ObjectPattern':
+      for (const property of param.properties) {
+        pushName(property.value, names);
+      }
+
+      break;
+    case 'RestElement':
+      pushName(param.argument, names);
+      break;
+    case 'MemberExpression':
+      break;
+  }
+}
+
 export function getNames(params: Array<Pattern>) {
   const names: Array<string> = [];
 
   for (const param of params) {
-    switch (param.type) {
-      case 'Identifier':
-        names.push(param.name);
-        break;
-      case 'ArrayPattern':
-        names.push(...getNames(param.elements));
-        break;
-      case 'AssignmentPattern':
-        names.push(...getNames([param.left]));
-        break;
-      case 'ObjectPattern':
-        for (const property of param.properties) {
-          names.push(...getNames([property.value]));
-        }
-
-        break;
-      case 'MemberExpression':
-      case 'RestElement':
-        break;
-    }
+    pushName(param, names);
   }
 
   return names;

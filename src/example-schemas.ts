@@ -35,7 +35,7 @@ export const toyInput = `
   }
 
   type Mutation {
-    foo(a: String, b: Double): [Int] {
+    foo(a: String, b: Int): [Int] {
       post('api/foo', {
         body: get('api'),
       })

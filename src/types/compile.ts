@@ -19,4 +19,5 @@ export interface LiveApi {
 export interface GqlTransformOptions {
   wrapStatements?(block: string): string;
   regenerate?(source: string): string;
+  debug?: boolean;
 }

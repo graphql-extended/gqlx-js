@@ -1,9 +1,13 @@
 import { insertNewValue, isNotIdentifier } from './ast';
-import { BlockStatement, CallExpression } from 'estree';
+import { BlockStatement, CallExpression, Statement, Expression } from 'estree';
+
+function insertNewValueAtTop(statements: Array<Statement>, name: string, init: Expression) {
+  insertNewValue(statements, name, init, statements.length);
+}
 
 const inbuiltFunctions = {
   either(block: BlockStatement) {
-    insertNewValue(block.body, 'either', {
+    insertNewValueAtTop(block.body, 'either', {
       type: 'ArrowFunctionExpression',
       async: false,
       expression: true,
@@ -43,7 +47,7 @@ const inbuiltFunctions = {
     });
   },
   use(block: BlockStatement) {
-    insertNewValue(block.body, 'use', {
+    insertNewValueAtTop(block.body, 'use', {
       type: 'ArrowFunctionExpression',
       async: false,
       expression: true,
@@ -124,7 +128,7 @@ const inbuiltFunctions = {
         },
       ],
     };
-    insertNewValue(block.body, 'cq', {
+    insertNewValueAtTop(block.body, 'cq', {
       type: 'ArrowFunctionExpression',
       async: false,
       expression: true,

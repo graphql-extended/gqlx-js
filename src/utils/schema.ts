@@ -1,17 +1,32 @@
 import { parse } from 'graphql';
 import { createLexer, Source, Token } from 'graphql/language';
-import { Position, DynamicGqlSchema } from '../types';
+import { Position, DynamicGqlSchema, GqlResolvers } from '../types';
 import { getMode, getName, getResolver, convertToPureGql } from '../helpers';
+import { GqlxError } from '../GqlxError';
 
-export function parseDynamicSchema(input: string): DynamicGqlSchema {
-  const source = new Source(input);
-  const lex = createLexer(source, undefined);
-  const tokens: Array<Token> = [];
-  const resolvers = {
+function parsePureGql(gql: string) {
+  try {
+    return parse(gql);
+  } catch (e) {
+    const {
+      locations: [{ line, column }],
+    } = e;
+    throw new GqlxError(`Error in GraphQL schema: ${e.message}`, { column, line, range: [0, 0] });
+  }
+}
+
+export function createEmptyResolvers(): GqlResolvers {
+  return {
     Query: {},
     Mutation: {},
     Subscription: {},
   };
+}
+
+export function extractResolvers(input: string, resolvers: GqlResolvers) {
+  const source = new Source(input);
+  const lex = createLexer(source, undefined);
+  const tokens: Array<Token> = [];
   const types = Object.keys(resolvers);
   const positions: Array<Position> = [];
   let mode: string | undefined = undefined;
@@ -29,9 +44,11 @@ export function parseDynamicSchema(input: string): DynamicGqlSchema {
       const name = getName(tokens);
 
       if (!name) {
-        throw new Error(
-          `Found invalid schema. Could not find a name for the ${mode} (Ln ${token.line}, Col ${token.column}).`,
-        );
+        throw new GqlxError(`Found invalid schema. Could not find a name for the ${mode}.`, {
+          range: [token.start, token.end],
+          column: token.column,
+          line: token.line,
+        });
       }
 
       const exp = getResolver(input, token.end);
@@ -52,21 +69,28 @@ export function parseDynamicSchema(input: string): DynamicGqlSchema {
       token = lex.advance();
 
       if (token.kind !== '}') {
-        throw new Error(
-          `Found invalid token. Expected '}', but found '${token.kind}' (Ln ${token.line}, Col ${token.column}).`,
-        );
+        throw new GqlxError(`Found invalid token. Expected '}', but found '${token.kind}'.`, {
+          range: [token.start, token.end],
+          column: token.column,
+          line: token.line,
+        });
       }
 
       pos.end = token.end;
-      token = lex.advance();
       positions.push(pos);
+    } else {
+      tokens.push(token);
     }
-
-    tokens.push(token);
   }
 
+  return positions;
+}
+
+export function parseDynamicSchema(input: string): DynamicGqlSchema {
+  const resolvers = createEmptyResolvers();
+  const positions = extractResolvers(input, resolvers);
   const text = convertToPureGql(input, positions);
-  const ast = parse(text);
+  const ast = parsePureGql(text);
 
   return {
     schema: {
