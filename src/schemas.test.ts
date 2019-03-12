@@ -246,7 +246,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         reorderRules:
-          "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/rule'), (async ({ items }) => { return await Promise.all(items.map(((rule) => { return $api.put('api/rule/'); }))); })); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
+          "try { const use = ((x, cb) => cb(x)); return await use(await $api.get('api/rule'), (async ({ items }) => { return await Promise.all(items.map((async (rule) => { return await $api.put('api/rule/'); }))); })); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
       },
     });
   });
@@ -341,7 +341,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         items:
-          "try { return (($data.arg) ? ((async () => { const _0 = await $api.get('a'); return _0.snippets.map(((snippet) => ({ ...(snippet), arg: $data.arg }))); })()) : (await $api.get('b'))); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
+          "try { return (($data.arg) ? (await (async () => { const _0 = await $api.get('a'); return _0.snippets.map(((snippet) => ({ ...(snippet), arg: $data.arg }))); })()) : (await $api.get('b'))); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
       },
     });
   });
@@ -365,7 +365,7 @@ describe('getConnectors', () => {
     expect(result).toEqual({
       Query: {
         test:
-          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/item'); return await use(_0.items, (async ([item]) => { ($data.id = (($data.id) ? ($data.id) : (await (async () => { const _1 = await $api.get('api/foo'); return use(_1.items.filter(((m) => (m.type === 'bar'))), (([foo]) => { (foo = ((foo) ? (foo) : (await $api.post('api/foo')))); return foo.id; })); })()))); return $data.id; })); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
+          "try { const use = ((x, cb) => cb(x)); const _0 = await $api.get('api/item'); return await use(_0.items, (async ([item]) => { ($data.id = (($data.id) ? ($data.id) : (await (async () => { const _1 = await $api.get('api/foo'); return await use(_1.items.filter(((m) => (m.type === 'bar'))), (async ([foo]) => { (foo = ((foo) ? (foo) : (await $api.post('api/foo')))); return foo.id; })); })()))); return $data.id; })); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
       },
     });
   });

@@ -17,13 +17,12 @@ function placeVariableClosestBlock(
       insertAwaitedValue(ancestor.body, variable, node, offset);
       break;
     } else if (ancestor.type === 'ConditionalExpression') {
-      if (ancestor.consequent === child) {
-        ancestor.consequent = wrapInFunctionBlock(child, variable, node);
-        break;
-      } else if (ancestor.alternate === child) {
-        ancestor.alternate = wrapInFunctionBlock(child, variable, node);
-        break;
-      }
+      const sub = child === ancestor.consequent ? 'consequent' : 'alternate';
+      const wrapper = wrapInFunctionBlock(child, variable, node);
+      const calleeBody = (wrapper.callee as any).body;
+      ancestor[sub] = wrapper;
+      ancestors.splice(i + 1, 0, wrapper, wrapper.callee, calleeBody);
+      break;
     }
   }
 }
@@ -100,7 +99,7 @@ export function awaitCall(
       } else if (ancestor.type === 'ConditionalExpression') {
         if (ancestor.consequent === child) {
           ancestor.consequent = wrapInAwait(child);
-        } else {
+        } else if (ancestor.alternate === child) {
           ancestor.alternate = wrapInAwait(child);
         }
       } else if (ancestor.type === 'SpreadElement') {

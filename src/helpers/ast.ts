@@ -144,6 +144,6 @@ export function insertAwaitedValue(statements: Array<Statement>, name: string, a
   insertNewValue(statements, name, wrapInAwait(argument), offset);
 }
 
-export function wrapInFunctionBlock(child: Expression, name: string, argument: Expression) {
+export function wrapInFunctionBlock(child: ExpressionNode, name: string, argument: Expression) {
   return wrapInLambda(child, [createVariableDeclaration(name, wrapInAwait(argument))], true);
 }
