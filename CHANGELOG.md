@@ -1,5 +1,11 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.3
+
+- Extended with `inspect` utility stub
+- Updated dependencies
+- Fixed bug regarding awaitables in nested expressions
+
 ## 0.2.2
 
 - Fixed bug that conditionals do not respect lazy loading (#6)

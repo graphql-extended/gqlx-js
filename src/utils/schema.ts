@@ -1,6 +1,6 @@
 import { parse } from 'graphql';
 import { createLexer, Source, Token } from 'graphql/language';
-import { Position, DynamicGqlSchema } from '../types';
+import { Position, DynamicGqlSchema, GqlResolvers } from '../types';
 import { getMode, getName, getResolver, convertToPureGql } from '../helpers';
 import { GqlxError } from '../GqlxError';
 
@@ -15,15 +15,18 @@ function parsePureGql(gql: string) {
   }
 }
 
-export function parseDynamicSchema(input: string): DynamicGqlSchema {
-  const source = new Source(input);
-  const lex = createLexer(source, undefined);
-  const tokens: Array<Token> = [];
-  const resolvers = {
+export function createEmptyResolvers(): GqlResolvers {
+  return {
     Query: {},
     Mutation: {},
     Subscription: {},
   };
+}
+
+export function extractResolvers(input: string, resolvers: GqlResolvers) {
+  const source = new Source(input);
+  const lex = createLexer(source, undefined);
+  const tokens: Array<Token> = [];
   const types = Object.keys(resolvers);
   const positions: Array<Position> = [];
   let mode: string | undefined = undefined;
@@ -80,6 +83,12 @@ export function parseDynamicSchema(input: string): DynamicGqlSchema {
     }
   }
 
+  return positions;
+}
+
+export function parseDynamicSchema(input: string): DynamicGqlSchema {
+  const resolvers = createEmptyResolvers();
+  const positions = extractResolvers(input, resolvers);
   const text = convertToPureGql(input, positions);
   const ast = parsePureGql(text);
 

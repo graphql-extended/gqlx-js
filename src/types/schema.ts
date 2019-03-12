@@ -11,16 +11,18 @@ export interface Connectors {
   };
 }
 
+export interface GqlResolvers {
+  Query: ResolverInfo;
+  Mutation: ResolverInfo;
+  Subscription: ResolverInfo;
+}
+
 export interface DynamicGqlSchema {
   schema: {
     text: string;
     ast: DocumentNode;
   };
-  resolvers: {
-    Query: ResolverInfo;
-    Mutation: ResolverInfo;
-    Subscription: ResolverInfo;
-  };
+  resolvers: GqlResolvers;
 }
 
 export interface ResolverInfo {

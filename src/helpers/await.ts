@@ -23,22 +23,13 @@ function placeVariableClosestBlock(
       const offset = ancestor.body.length - position;
       insertAwaitedValue(ancestor.body, variable, node, offset);
       break;
-    } else if (ancestor.type === 'ConditionalExpression' && ancestor.test !== child) {
-      const ae = wrapInFunctionBlock(child as Expression, variable, node);
-
-      if (ancestor.consequent === child) {
-        ancestor.consequent = ae;
-      } else if (ancestor.alternate === child) {
-        ancestor.alternate = ae;
-      } else {
-        continue;
-      }
-
-      const ce = ae.argument as CallExpression;
-      const fn = ce.callee as ArrowFunctionExpression;
-      const bs = fn.body as BlockStatement;
-      const rs = bs.body[bs.body.length - 1] as ReturnStatement;
-      ancestors.splice(i, 0, ancestor, ae, ce, fn, bs, rs, child);
+    } else if (ancestor.type === 'ConditionalExpression') {
+      const sub = child === ancestor.consequent ? 'consequent' : 'alternate';
+      const ae = wrapInFunctionBlock(child, variable, node);
+      const ce = ae.callee as ArrowFunctionExpression;
+      const bs = ce.body;
+      ancestor[sub] = ae;
+      ancestors.splice(i + 1, 0, ae, ce, bs);
       break;
     }
   }
@@ -119,7 +110,7 @@ export function awaitCall(
       } else if (ancestor.type === 'ConditionalExpression') {
         if (ancestor.consequent === child) {
           ancestor.consequent = wrapInAwait(child);
-        } else {
+        } else if (ancestor.alternate === child) {
           ancestor.alternate = wrapInAwait(child);
         }
       } else if (ancestor.type === 'SpreadElement') {
