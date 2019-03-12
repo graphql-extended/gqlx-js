@@ -69,7 +69,7 @@ function transpileSource(node: Expression, api: AvailableApi, args: Array<string
 }
 
 function defaultWrapper(block: string) {
-  return `try ${block} catch (err) { throw new Error(JSON.stringify(err)); }`;
+  return `try ${block} catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }`;
 }
 
 export function transform(gql: DynamicGqlSchema, api: AvailableApi, options: GqlTransformOptions = {}): Connectors {
