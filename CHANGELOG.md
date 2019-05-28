@@ -1,5 +1,9 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.4
+
+- Updated dependencies due to known CVEs
+
 ## 0.2.3
 
 - Extended with `inspect` utility stub
