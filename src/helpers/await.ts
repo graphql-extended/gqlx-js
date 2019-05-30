@@ -92,6 +92,10 @@ export function awaitCall(
         const argIndex = ancestor.arguments.findIndex(m => m === child);
         ancestor.arguments[argIndex] = wrapInAwait(child);
       } else if (ancestor.type === 'CallExpression' && isAll(ancestor.callee)) {
+        if (child.type === 'ArrowFunctionExpression') {
+          child.async = true;
+        }
+
         placeInAsyncMap(ancestor, ancestors[i - 1]);
       } else if (ancestor.type === 'AssignmentExpression') {
         ancestor.right = wrapInAwait(ancestor.right);
