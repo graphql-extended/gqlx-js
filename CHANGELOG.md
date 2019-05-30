@@ -3,6 +3,7 @@
 ## 0.2.4
 
 - Updated dependencies due to known CVEs
+- Fixed missing async in map functions (#10)
 
 ## 0.2.3
 
