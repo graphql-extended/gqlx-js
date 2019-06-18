@@ -370,7 +370,33 @@ describe('getConnectors', () => {
     });
   });
 
-  it('', () => {
+  it('Should place async declarations on used .map function calls', () => {
+    const source = `type Foo {
+      product: String
+      version: String
+    }
+
+    type Query {
+      foo: [Foo] {
+        get('api/product').items.map(product => {
+          const versions = get(\`api/product/\${product.id}/version\`).items;
+          return {
+            product,
+            versions,
+          };
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        foo:
+          "try { const _0 = await $api.get('api/product'); return await Promise.all(_0.items.map((async (product) => { const _1 = await $api.get(`api/product/${product.id}/version`); const versions = _1.items; return ({ product, versions }); }))); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }",
+      },
+    });
+  });
+
+  it('Should wrap any function using await in an async lambda', () => {
     const source = `type SoftwareProductWithVersion {
       product: String
       versions: [String]

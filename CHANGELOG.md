@@ -1,9 +1,14 @@
 # gqlx for JavaScript Applications Changelog
 
-## 0.2.4
+## 0.2.5
 
 - Updated dependencies
 - Fixed bug that awaited functions are not async
+
+## 0.2.4
+
+- Updated dependencies due to known CVEs
+- Fixed missing async in map functions (#10)
 
 ## 0.2.3
 
