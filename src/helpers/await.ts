@@ -86,8 +86,6 @@ export function awaitCall(
           type: 'Identifier',
           name: variable,
         };
-
-        break;
       } else if (ancestor.type === 'CallExpression' && child.type !== 'ArrowFunctionExpression') {
         const argIndex = ancestor.arguments.findIndex(m => m === child);
         ancestor.arguments[argIndex] = wrapInAwait(child);

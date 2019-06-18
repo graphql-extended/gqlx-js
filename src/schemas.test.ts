@@ -369,4 +369,31 @@ describe('getConnectors', () => {
       },
     });
   });
+
+  it('', () => {
+    const source = `type SoftwareProductWithVersion {
+      product: String
+      versions: [String]
+    }
+
+    type Query {
+      test(productId: ID!): SoftwareProductWithVersion {
+        use(
+          get(\`api/product/productId\`), product => {
+          const versions = get(\`api/product/productId/version\`).items;
+          return {
+            product,
+            versions,
+          };
+        })
+      }
+    }`;
+    const result = getConnectors(source);
+    expect(result).toEqual({
+      Query: {
+        test:
+          'try { const use = ((x, cb) => cb(x)); return await use(await $api.get(`api/product/productId`), (async (product) => { const _0 = await $api.get(`api/product/productId/version`); const versions = _0.items; return ({ product, versions }); })); } catch (err) { throw new Error(JSON.stringify(err, Object.getOwnPropertyNames(err))); }',
+      },
+    });
+  });
 });

@@ -1,5 +1,10 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.4
+
+- Updated dependencies
+- Fixed bug that awaited functions are not async
+
 ## 0.2.3
 
 - Extended with `inspect` utility stub
