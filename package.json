@@ -14,7 +14,7 @@
     "bundle": "browserify dist/bundle.js -o dist/bundle.js -s 'gqlx'",
     "compile": "tsc --project tsconfig.json",
     "minify": "uglifyjs dist/bundle.js > dist/bundle.min.js",
-    "build": "npm run compile && npm run bundle && npm run minify"
+    "build": "npm run compile -- -target es5 && npm run bundle && npm run minify && npm run compile"
   },
   "engines": {
     "node": ">=8.0.0"
