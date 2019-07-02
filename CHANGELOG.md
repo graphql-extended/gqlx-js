@@ -1,5 +1,12 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.6
+
+- Updated dependencies
+- Improved inbuilt function generation
+- Fixed bug with `cq` to normalize entries (#11)
+- Improved calculation of computed props of objects
+
 ## 0.2.5
 
 - Updated dependencies
@@ -29,12 +36,12 @@
 ## 0.2.0
 
 - Fixed bug in parenthesis evaluation
-- Emit consistent error object incl. diagonstic information
+- Emit consistent error object incl. diagnostic information
 
 ## 0.1.6
 
 - Updated dependencies due to CVE-2018-16469
-- Fixed bug related to object with parantheses (#2)
+- Fixed bug related to object with parentheses (#2)
 - Fixed bug related to spread return (#3)
 - Fixed bug related to assign property name (#4)
 - Fixed bug related to nested `Promise.all` (#5)

@@ -1,5 +1,10 @@
-import { insertNewValue, isNotIdentifier } from './ast';
+import { parseExpressionAt } from 'acorn';
 import { BlockStatement, CallExpression, Statement, Expression } from 'estree';
+import { insertNewValue, callFunction } from './ast';
+
+function produceFrom(input: string) {
+  return parseExpressionAt(input, 0, { ecmaVersion: 9, preserveParens: true }) as Expression;
+}
 
 function insertNewValueAtTop(statements: Array<Statement>, name: string, init: Expression) {
   insertNewValue(statements, name, init, statements.length);
@@ -7,127 +12,15 @@ function insertNewValueAtTop(statements: Array<Statement>, name: string, init: E
 
 const inbuiltFunctions = {
   either(block: BlockStatement) {
-    insertNewValueAtTop(block.body, 'either', {
-      type: 'ArrowFunctionExpression',
-      async: false,
-      expression: true,
-      params: [
-        {
-          type: 'Identifier',
-          name: 'x',
-        },
-        {
-          type: 'Identifier',
-          name: 'value',
-        },
-      ],
-      body: {
-        type: 'ConditionalExpression',
-        test: {
-          type: 'BinaryExpression',
-          left: {
-            type: 'Identifier',
-            name: 'x',
-          },
-          right: {
-            type: 'Identifier',
-            name: 'undefined',
-          },
-          operator: '===',
-        },
-        consequent: {
-          type: 'Identifier',
-          name: 'value',
-        },
-        alternate: {
-          type: 'Identifier',
-          name: 'x',
-        },
-      },
-    });
+    insertNewValueAtTop(block.body, 'either', produceFrom('(x, value) => x === undefined ? value : x'));
   },
   use(block: BlockStatement) {
-    insertNewValueAtTop(block.body, 'use', {
-      type: 'ArrowFunctionExpression',
-      async: false,
-      expression: true,
-      params: [
-        {
-          type: 'Identifier',
-          name: 'x',
-        },
-        {
-          type: 'Identifier',
-          name: 'cb',
-        },
-      ],
-      body: {
-        type: 'CallExpression',
-        callee: {
-          type: 'Identifier',
-          name: 'cb',
-        },
-        arguments: [
-          {
-            type: 'Identifier',
-            name: 'x',
-          },
-        ],
-      },
-    });
+    insertNewValueAtTop(block.body, 'use', produceFrom('(x, cb) => cb(x)'));
   },
   cq(block: BlockStatement) {
-    const filterKeys: CallExpression = {
-      type: 'CallExpression',
-      callee: {
-        type: 'MemberExpression',
-        object: {
-          type: 'CallExpression',
-          callee: {
-            type: 'MemberExpression',
-            object: {
-              type: 'Identifier',
-              name: 'Object',
-            },
-            property: {
-              type: 'Identifier',
-              name: 'keys',
-            },
-            computed: false,
-          },
-          arguments: [
-            {
-              type: 'Identifier',
-              name: 'obj',
-            },
-          ],
-        },
-        property: {
-          type: 'Identifier',
-          name: 'filter',
-        },
-        computed: false,
-      },
-      arguments: [
-        {
-          type: 'ArrowFunctionExpression',
-          async: false,
-          expression: true,
-          params: [
-            {
-              type: 'Identifier',
-              name: 'm',
-            },
-          ],
-          body: {
-            type: 'LogicalExpression',
-            left: isNotIdentifier('undefined'),
-            right: isNotIdentifier('null'),
-            operator: '&&',
-          },
-        },
-      ],
-    };
+    const filterKeys = produceFrom(
+      'Object.keys(obj).filter(m => obj[m] !== undefined && obj[m] !== null)',
+    ) as CallExpression;
     insertNewValueAtTop(block.body, 'cq', {
       type: 'ArrowFunctionExpression',
       async: false,
@@ -236,11 +129,11 @@ const inbuiltFunctions = {
                             },
                           ],
                           expressions: [
-                            {
+                            callFunction('encodeURIComponent', {
                               type: 'Identifier',
                               name: 'm',
-                            },
-                            {
+                            }),
+                            callFunction('encodeURIComponent', {
                               type: 'MemberExpression',
                               computed: true,
                               object: {
@@ -251,7 +144,7 @@ const inbuiltFunctions = {
                                 type: 'Identifier',
                                 name: 'm',
                               },
-                            },
+                            }),
                           ],
                         },
                       },

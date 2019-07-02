@@ -81,6 +81,17 @@ export function wrapInLambda(argument: any, statements: Array<Statement> = [], a
   };
 }
 
+export function callFunction(name: string, argument: Expression): CallExpression {
+  return {
+    type: 'CallExpression',
+    callee: {
+      type: 'Identifier',
+      name,
+    },
+    arguments: [argument],
+  };
+}
+
 export function isNotIdentifier(name: string): BinaryExpression {
   return {
     type: 'BinaryExpression',

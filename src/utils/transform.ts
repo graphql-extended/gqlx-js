@@ -1,5 +1,5 @@
 import { DynamicGqlSchema, AvailableApi, Connectors, GqlTransformOptions } from '../types';
-import { Expression, BlockStatement, CallExpression, ArrowFunctionExpression, ConditionalExpression } from 'estree';
+import { Expression, BlockStatement, CallExpression } from 'estree';
 import {
   getArguments,
   ExpressionNode,

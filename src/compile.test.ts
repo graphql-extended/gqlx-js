@@ -101,4 +101,97 @@ describe('compile', () => {
     const resultWithoutArgument = await svc('Query', 'test', {});
     expect(resultWithoutArgument).toBe(12);
   });
+
+  it('either uses either the left or right side', async () => {
+    const source = `
+      type Query {
+        test(name: String): String {
+          either(name, 'Fallback')
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result1 = await svc('Query', 'test', { name: 'Tester' });
+    const result2 = await svc('Query', 'test', {});
+    expect(result1).toBe('Tester');
+    expect(result2).toBe('Fallback');
+  });
+
+  it('use uses the given type in the callback', async () => {
+    const source = `
+      type Query {
+        test(name: String): Int {
+          use(name, x => x.length)
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result = await svc('Query', 'test', { name: 'Tester' });
+    expect(result).toBe(6);
+  });
+
+  it('cq adds the provided values', async () => {
+    const source = `
+      type Query {
+        test(name: String): String {
+          cq('/myurl', { name })
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result = await svc('Query', 'test', { name: 'tester' });
+    expect(result).toBe('/myurl?name=tester');
+  });
+
+  it('cq ignores empty objects', async () => {
+    const source = `
+      type Query {
+        test(name: String): String {
+          cq('/myurl', { })
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result = await svc('Query', 'test', { name: 'tester' });
+    expect(result).toBe('/myurl');
+  });
+
+  it('cq concats multiple values', async () => {
+    const source = `
+      type Query {
+        test(name: String): String {
+          cq('/myurl', { a: 'b', name, c: 'd' })
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result = await svc('Query', 'test', { name: 'tester' });
+    expect(result).toBe('/myurl?a=b&name=tester&c=d');
+  });
+
+  it('cq properly encodes the values', async () => {
+    const source = `
+      type Query {
+        test(name: String, value: String): String {
+          cq('/myurl', { name, value })
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result = await svc('Query', 'test', { name: 'a&b', value: 'you&me' });
+    expect(result).toBe('/myurl?name=a%26b&value=you%26me');
+  });
+
+  it('cq supports computed objects', async () => {
+    const source = `
+      type Query {
+        test(name: String, value: String): String {
+          cq('/myurl', { [name]: value })
+        }
+      }`;
+    const mod = compile('test', source, {});
+    const svc = mod.createService({});
+    const result = await svc('Query', 'test', { name: 'a&b', value: 'you&me' });
+    expect(result).toBe('/myurl?a%26b=you%26me');
+  });
 });

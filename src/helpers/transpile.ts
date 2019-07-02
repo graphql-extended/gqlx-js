@@ -108,7 +108,7 @@ export function transpileNode(
             return `...(${arg})`;
           }
 
-          const key = transpileNode(p.key, [], [], locals);
+          const key = transpileNode(p.key, p.computed ? apis : [], p.computed ? args : [], locals);
 
           if (!p.shorthand || [...args, ...apis].indexOf(key) >= 0) {
             const value = transpileNode(p.value as any, apis, args, locals);
