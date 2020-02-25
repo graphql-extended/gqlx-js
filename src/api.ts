@@ -5,6 +5,7 @@ export const defaultApi: AvailableApi = {
   post: true,
   del: true,
   put: true,
+  patch: true,
   form: true,
   listen: false,
 };

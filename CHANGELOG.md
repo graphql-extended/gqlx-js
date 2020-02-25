@@ -1,5 +1,10 @@
 # gqlx for JavaScript Applications Changelog
 
+## 0.2.7
+
+- Updated dependencies
+- Included standard patch function
+
 ## 0.2.6
 
 - Updated dependencies

@@ -7,6 +7,7 @@ const api = {
   post: true,
   del: true,
   put: true,
+  patch: true,
   find: true,
   form: true,
   listen: false,
