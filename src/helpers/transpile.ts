@@ -47,7 +47,15 @@ export function transpilePattern(
       return `${transpilePattern(pattern.left, apis, args, locals)} = ${rhs}`;
     }
     case 'ObjectPattern':
-      return `{ ${pattern.properties.map(p => transpilePattern(p.value, apis, args, locals)).join(', ')} }`;
+      return `{ ${pattern.properties
+        .map(p => {
+          if (p.type === 'Property') {
+            return transpilePattern(p.value, apis, args, locals);
+          } else {
+            return '...';
+          }
+        })
+        .join(', ')} }`;
     case 'MemberExpression': {
       return transpileMember(pattern, apis, args, locals);
     }
@@ -101,21 +109,19 @@ export function transpileNode(
     case 'ObjectExpression': {
       const properties = node.properties
         .map(p => {
-          const x = p as any;
-
-          if (x.type === 'SpreadElement') {
-            const arg = transpileNode(x.argument, apis, args, locals);
+          if (p.type === 'SpreadElement') {
+            const arg = transpileNode(p.argument, apis, args, locals);
             return `...(${arg})`;
+          } else {
+            const key = transpileNode(p.key, p.computed ? apis : [], p.computed ? args : [], locals);
+
+            if (!p.shorthand || [...args, ...apis].indexOf(key) >= 0) {
+              const value = transpileNode(p.value as any, apis, args, locals);
+              return p.computed ? `[${key}]: ${value}` : `${key}: ${value}`;
+            }
+
+            return key;
           }
-
-          const key = transpileNode(p.key, p.computed ? apis : [], p.computed ? args : [], locals);
-
-          if (!p.shorthand || [...args, ...apis].indexOf(key) >= 0) {
-            const value = transpileNode(p.value as any, apis, args, locals);
-            return p.computed ? `[${key}]: ${value}` : `${key}: ${value}`;
-          }
-
-          return key;
         })
         .join(', ');
       return `({ ${properties} })`;

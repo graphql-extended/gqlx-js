@@ -13,7 +13,9 @@ export function pushName(param: Pattern, names: Array<string>) {
       break;
     case 'ObjectPattern':
       for (const property of param.properties) {
-        pushName(property.value, names);
+        if (property.type === 'Property') {
+          pushName(property.value, names);
+        }
       }
 
       break;
