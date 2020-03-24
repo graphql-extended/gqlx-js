@@ -15,7 +15,10 @@ describe('convertToPureGql', () => {
 
   it('does exclude all positions', () => {
     const source = 'abcdefgh';
-    const result = convertToPureGql(source, [{ start: 2, end: 4 }, { start: 6, end: 8 }]);
+    const result = convertToPureGql(source, [
+      { start: 2, end: 4 },
+      { start: 6, end: 8 },
+    ]);
     expect(result).toBe('abef');
   });
 

@@ -39,17 +39,14 @@ export function generate(name: string, connectors: Connectors) {
     return res;
   }, {});
 
-  const resolvers = Object.keys(connectors).reduce(
-    (res, type) => {
-      const connector = connectors[type];
-      res[type] = Object.keys(connector).reduce((con, field) => {
-        con[field] = createResolver(name, type, field);
-        return con;
-      }, {});
-      return res;
-    },
-    {} as SchemaResolvers,
-  );
+  const resolvers = Object.keys(connectors).reduce((res, type) => {
+    const connector = connectors[type];
+    res[type] = Object.keys(connector).reduce((con, field) => {
+      con[field] = createResolver(name, type, field);
+      return con;
+    }, {});
+    return res;
+  }, {} as SchemaResolvers);
 
   return {
     resolvers,
@@ -57,10 +54,7 @@ export function generate(name: string, connectors: Connectors) {
       return (type: string, field: string, data: any) => {
         const model = models[type];
         const connect = model[field];
-        return connect(
-          api,
-          data,
-        );
+        return connect(api, data);
       };
     },
   };

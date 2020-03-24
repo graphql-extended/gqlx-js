@@ -77,7 +77,12 @@ describe('compile', () => {
           case 'api/item':
             return Promise.resolve({ items: [] });
           case 'api/foo':
-            return Promise.resolve({ items: [{ type: 'foo', id: 0 }, { type: 'bar', id: 2 }] });
+            return Promise.resolve({
+              items: [
+                { type: 'foo', id: 0 },
+                { type: 'bar', id: 2 },
+              ],
+            });
           default:
             return Promise.reject('Should not end up here.');
         }

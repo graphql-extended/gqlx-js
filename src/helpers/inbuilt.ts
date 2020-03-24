@@ -184,13 +184,10 @@ export type GenerateHelpersOptions = { [name in keyof Inbuilt]: boolean };
 export const inbuiltFunctionNames = Object.keys(inbuiltFunctions) as Array<keyof Inbuilt>;
 
 export function createGenerationMask() {
-  return inbuiltFunctionNames.reduce(
-    (prev, curr) => {
-      prev[curr] = false;
-      return prev;
-    },
-    {} as GenerateHelpersOptions,
-  );
+  return inbuiltFunctionNames.reduce((prev, curr) => {
+    prev[curr] = false;
+    return prev;
+  }, {} as GenerateHelpersOptions);
 }
 
 export function generateHelpers(generate: GenerateHelpersOptions, block: BlockStatement) {
