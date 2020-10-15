@@ -1,7 +1,7 @@
 {
   "name": "gqlx-js",
   "description": "GraphQL eXtended language and tools library for Node.js / JS applications.",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "main": "dist",
   "types": "dist",
   "license": "MIT",
@@ -24,32 +24,32 @@
     "fs": false
   },
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/polyfill": "^7.4.4",
-    "@babel/preset-env": "^7.4.5",
+    "@babel/core": "^7.12.0",
+    "@babel/polyfill": "^7.11.5",
+    "@babel/preset-env": "^7.12.0",
     "@types/acorn": "^4.0.5",
     "@types/graphql": "^14.2.2",
-    "@types/jest": "^26.0.1",
-    "@types/node": "^11.13.15",
+    "@types/jest": "^26.0.14",
+    "@types/node": "^11.15.31",
     "babelify": "^10.0.0",
-    "browserify": "^16.2.3",
-    "graphql": "^14.4.1",
-    "jest": "^26.1.0",
+    "browserify": "^16.5.2",
+    "graphql": "^14.7.0",
+    "jest": "^26.5.3",
     "prettier": "^1.18.2",
-    "regenerator-runtime": "^0.13.2",
-    "ts-jest": "^26.1.1",
-    "ts-node": "^8.3.0",
+    "regenerator-runtime": "^0.13.7",
+    "ts-jest": "^26.4.1",
+    "ts-node": "^8.10.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.9.5",
-    "uglify-js": "^3.6.0"
+    "tslint-plugin-prettier": "^2.3.0",
+    "typescript": "^3.9.7",
+    "uglify-js": "^3.11.2"
   },
   "peerDependencies": {
     "graphql": "14.x || 0.13.x || 0.12.x || 0.11.x || 0.10.x"
   },
   "dependencies": {
-    "acorn": "^6.1.1",
+    "acorn": "^6.4.2",
     "acorn-walk": "^6.1.1"
   }
 }
