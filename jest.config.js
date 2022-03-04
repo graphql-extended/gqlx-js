@@ -11,6 +11,9 @@ module.exports = {
   moduleDirectories: ['<rootDir>/node_modules', '<rootDir>/src'],
   modulePaths: ['src', 'node_modules'],
   globals: {
+    'ts-jest': {
+      diagnostics: false,
+    },
     NODE_ENV: 'test',
   },
   testPathIgnorePatterns: [],
