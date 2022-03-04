@@ -1,4 +1,4 @@
-import { Pattern, MemberExpression } from 'estree';
+import { Pattern, MemberExpression, PrivateIdentifier } from 'estree';
 import { ExpressionNode } from './ast';
 
 export function getIdentifier(name: string, apis: Array<string>, args: Array<string>, locals: Array<string>) {
@@ -30,12 +30,12 @@ export function transpileMember(
 }
 
 export function transpilePattern(
-  pattern: Pattern,
+  pattern: Pattern | null,
   apis: Array<string>,
   args: Array<string>,
   locals: Array<string>,
 ): string {
-  switch (pattern.type) {
+  switch (pattern?.type) {
     case 'RestElement':
       return '...';
     case 'ArrayPattern':
@@ -65,7 +65,7 @@ export function transpilePattern(
 }
 
 export function transpileNode(
-  node: ExpressionNode,
+  node: ExpressionNode | PrivateIdentifier,
   apis: Array<string>,
   args: Array<string>,
   locals: Array<string>,
@@ -73,6 +73,9 @@ export function transpileNode(
   switch (node.type) {
     case 'EmptyStatement': {
       return ';';
+    }
+    case 'PrivateIdentifier': {
+      return `#${node.name}`;
     }
     case 'TryStatement': {
       return '';

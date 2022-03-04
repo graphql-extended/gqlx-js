@@ -77,6 +77,7 @@ export function wrapInLambda(argument: any, statements: Array<Statement> = [], a
         ],
       },
     },
+    optional: false,
     arguments: [],
   };
 }
@@ -88,6 +89,7 @@ export function callFunction(name: string, argument: Expression): CallExpression
       type: 'Identifier',
       name,
     },
+    optional: false,
     arguments: [argument],
   };
 }
@@ -98,6 +100,8 @@ export function isNotIdentifier(name: string): BinaryExpression {
     operator: '!==',
     left: {
       type: 'MemberExpression',
+      computed: true,
+      optional: true,
       object: {
         type: 'Identifier',
         name: 'obj',
@@ -106,7 +110,6 @@ export function isNotIdentifier(name: string): BinaryExpression {
         type: 'Identifier',
         name: 'm',
       },
-      computed: true,
     },
     right: {
       type: 'Identifier',
@@ -119,8 +122,9 @@ export function wrapInPromiseAll(argument: any): CallExpression {
   return {
     type: 'CallExpression',
     callee: {
-      computed: false,
       type: 'MemberExpression',
+      computed: false,
+      optional: false,
       object: {
         type: 'Identifier',
         name: 'Promise',
@@ -130,6 +134,7 @@ export function wrapInPromiseAll(argument: any): CallExpression {
         name: 'all',
       },
     },
+    optional: false,
     arguments: [argument],
   };
 }

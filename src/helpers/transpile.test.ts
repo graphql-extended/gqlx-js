@@ -30,6 +30,7 @@ describe('transpileNode', () => {
           type: 'Identifier',
           name: 'f',
         },
+        optional: false,
         arguments: [
           {
             type: 'Identifier',

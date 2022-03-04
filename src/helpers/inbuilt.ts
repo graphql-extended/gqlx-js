@@ -47,6 +47,7 @@ const inbuiltFunctions = {
           test: {
             type: 'MemberExpression',
             computed: false,
+            optional: false,
             object: filterKeys,
             property: {
               type: 'Identifier',
@@ -78,17 +79,21 @@ const inbuiltFunctions = {
                 type: 'CallExpression',
                 callee: {
                   type: 'MemberExpression',
+                  computed: false,
+                  optional: false,
                   object: {
                     type: 'CallExpression',
                     callee: {
                       type: 'MemberExpression',
+                      computed: false,
+                      optional: false,
                       object: filterKeys,
                       property: {
                         type: 'Identifier',
                         name: 'map',
                       },
-                      computed: false,
                     },
+                    optional: false,
                     arguments: [
                       {
                         type: 'ArrowFunctionExpression',
@@ -136,6 +141,7 @@ const inbuiltFunctions = {
                             callFunction('encodeURIComponent', {
                               type: 'MemberExpression',
                               computed: true,
+                              optional: false,
                               object: {
                                 type: 'Identifier',
                                 name: 'obj',
@@ -154,8 +160,8 @@ const inbuiltFunctions = {
                     type: 'Identifier',
                     name: 'join',
                   },
-                  computed: false,
                 },
+                optional: false,
                 arguments: [
                   {
                     type: 'Literal',

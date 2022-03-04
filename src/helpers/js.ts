@@ -27,11 +27,13 @@ export function pushName(param: Pattern, names: Array<string>) {
   }
 }
 
-export function getNames(params: Array<Pattern>) {
+export function getNames(params: Array<Pattern | null>) {
   const names: Array<string> = [];
 
   for (const param of params) {
-    pushName(param, names);
+    if (param) {
+      pushName(param, names);
+    }
   }
 
   return names;
