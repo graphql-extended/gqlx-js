@@ -1,5 +1,5 @@
 import { parse } from 'graphql';
-import { createLexer, Source, Token } from 'graphql/language';
+import { Lexer, Source, Token, TokenKind } from 'graphql/language';
 import { Position, DynamicGqlSchema, GqlResolvers } from '../types';
 import { getMode, getName, getResolver, convertToPureGql } from '../helpers';
 import { GqlxError } from '../GqlxError';
@@ -25,7 +25,7 @@ export function createEmptyResolvers(): GqlResolvers {
 
 export function extractResolvers(input: string, resolvers: GqlResolvers) {
   const source = new Source(input);
-  const lex = createLexer(source, undefined);
+  const lex = new Lexer(source);
   const tokens: Array<Token> = [];
   const types = Object.keys(resolvers);
   const positions: Array<Position> = [];
@@ -55,16 +55,7 @@ export function extractResolvers(input: string, resolvers: GqlResolvers) {
 
       resolvers[mode][name] = exp;
 
-      lex.token = {
-        kind: 'Comment',
-        start: exp.start,
-        end: exp.end,
-        column: token.column,
-        line: token.line,
-        next: undefined as any,
-        prev: undefined as any,
-        value: '',
-      };
+      lex.token = new Token(TokenKind.COMMENT, exp.start, exp.end, token.line, token.column);
 
       token = lex.advance();
 
