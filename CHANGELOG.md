@@ -2,7 +2,8 @@
 
 ## 0.3.0
 
-- Updated dependencies
+- Updated dependencies (`graphql` v16)
+- Migrated to GitHub actions
 
 ## 0.2.11
 
